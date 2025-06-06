@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#f5a105] text-amber-950 font-sans overflow-x-hidden;
+    background-image: 
+      url('https://www.transparenttextures.com/patterns/stone-wall.png'),
+      radial-gradient(circle at 20% 20%, rgba(120, 53, 15, 0.3) 0%, transparent 30%),
+      radial-gradient(circle at 80% 80%, rgba(146, 64, 14, 0.3) 0%, transparent 30%),
+      radial-gradient(circle at 50% 50%, rgba(180, 83, 9, 0.2) 0%, transparent 60%);
+  }
+}
+
+@layer components {
+  .medieval-card {
+    @apply bg-amber-100/95 backdrop-blur-lg rounded-2xl p-6
+    transition-all duration-300 
+    shadow-[inset_0_0_20px_rgba(0,0,0,0.2)]
+    border-4 border-amber-950;
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  }
+
+  .medieval-card:hover {
+    @apply border-amber-700 -translate-y-1
+    shadow-[0_10px_30px_rgba(146,64,14,0.2),inset_0_0_20px_rgba(0,0,0,0.2)];
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-950 via-amber-800 to-amber-950
+    drop-shadow-[0_2px_2px_rgba(255,255,255,0.2)] font-extrabold;
+  }
+
+  .medieval-button {
+    @apply relative px-8 py-3 rounded-2xl transition-all duration-300
+    border-4 border-amber-950 bg-amber-100
+    text-amber-950 font-bold uppercase tracking-wider text-sm
+    shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]
+    hover:shadow-[0_5px_15px_rgba(146,64,14,0.4),inset_0_2px_4px_rgba(0,0,0,0.1)]
+    hover:-translate-y-1 hover:border-amber-700
+    hover:bg-white;
+  }
+
+  .medieval-input {
+    @apply bg-amber-100/90 border-4 border-amber-950 rounded-2xl px-4 py-3
+    focus:outline-none focus:border-amber-700 transition-colors duration-300
+    hover:border-amber-800 backdrop-blur-lg font-sans text-amber-950
+    shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]
+    placeholder:text-amber-950/50;
+  }
+
+  .latest-kingdom {
+    @apply relative px-4 py-2 rounded-2xl border-4 border-amber-950 bg-amber-100/90;
+    animation: pulse-border 2s ease-in-out infinite;
+  }
+
+  .latest-kingdom::before {
+    content: '';
+    @apply absolute -inset-1 rounded-2xl bg-amber-500/20;
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  /* Wallet UI Customization */
+  [data-wallet-ui] {
+    --wallet-modal-bg: theme('colors.amber.100');
+    --wallet-modal-border: theme('colors.amber.950');
+    --wallet-modal-text: theme('colors.amber.950');
+    --wallet-provider-hover: theme('colors.amber.200');
+  }
+
+  /* Main wallet button */
+  [data-wallet-ui] > button {
+    @apply medieval-button !px-4 !py-1.5 !text-sm;
+  }
+
+  /* Modal overlay */
+  [data-wallet-ui] [role="dialog"] {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  /* Modal container */
+  [data-wallet-ui] [role="dialog"] > div {
+    @apply w-full max-w-sm bg-amber-100 rounded-2xl shadow-xl
+    border-4 border-amber-950 overflow-hidden;
+  }
+
+  /* Modal header */
+  [data-wallet-ui] [role="dialog"] > div > div:first-child {
+    @apply p-6 border-b-4 border-amber-900/20;
+  }
+
+  [data-wallet-ui] [role="dialog"] h3 {
+    @apply text-2xl font-bold text-amber-950;
+  }
+
+  /* Wallet list container */
+  [data-wallet-ui] [role="dialog"] ul {
+    @apply p-4 space-y-2;
+  }
+
+  /* Individual wallet buttons */
+  [data-wallet-ui] [role="dialog"] li button {
+    @apply w-full flex items-center gap-3 px-4 py-3
+    bg-amber-900/5 hover:bg-amber-900/10
+    border-2 border-amber-900/20 hover:border-amber-900
+    rounded-xl transition-all duration-200
+    text-amber-950 font-semibold text-left;
+  }
+
+  /* Wallet button icons */
+  [data-wallet-ui] [role="dialog"] li button img {
+    @apply w-6 h-6 object-contain;
+  }
+
+  /* Connected wallet dropdown */
+  [data-wallet-ui] [role="menu"] {
+    @apply absolute right-0 mt-2 w-56 origin-top-right z-50
+    bg-amber-100 rounded-xl shadow-lg ring-1 ring-black ring-opacity-5
+    border-4 border-amber-950
+    divide-y divide-amber-900/20;
+  }
+
+  /* Dropdown menu items container */
+  [data-wallet-ui] [role="menu"] > div {
+    @apply bg-amber-100 py-1;
+  }
+
+  /* Dropdown items */
+  [data-wallet-ui] [role="menuitem"] {
+    @apply block w-full px-4 py-2.5
+    text-sm text-amber-950
+    hover:bg-amber-900/10 transition-colors
+    cursor-pointer font-medium;
+  }
+
+  /* Connected account info */
+  [data-wallet-ui] [role="menuitem"]:first-child {
+    @apply font-bold border-b border-amber-900/10;
+  }
+
+  /* Disconnect button */
+  [data-wallet-ui] [role="menuitem"]:last-child {
+    @apply text-red-600 hover:text-red-700 hover:bg-red-50;
+  }
+
+  /* Page Layout Adjustments */
+  .page-top-padding {
+    @apply pt-40; /* Accounts for network strip + navbar + recent kingdoms */
+  }
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: rgba(146,64,14,0.6);
+  }
+  50% {
+    border-color: rgba(180,83,9,0.9);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.05);
+  }
+}
