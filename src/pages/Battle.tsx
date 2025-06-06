@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sword, Trophy, Crown, Timer, Coins, Shield, Star, Flame } from 'lucide-react';
 import { useKingdom } from '../contexts/KingdomContext';
 import { calculateLevel, calculateReputation } from '../lib/yjs';
@@ -18,6 +18,7 @@ interface LeaderboardEntry {
 
 export default function Battle() {
   const { kingdoms } = useKingdom();
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -33,6 +34,38 @@ export default function Battle() {
     nextMonday.setHours(0, 0, 0, 0);
     return nextMonday;
   };
+
+  // Generate stable leaderboard data
+  useEffect(() => {
+    const generateLeaderboard = () => {
+      const entries: LeaderboardEntry[] = kingdoms.map(kingdom => {
+        // Use kingdom ID to generate consistent random contribution
+        const seed = parseInt(kingdom.id) || 1;
+        const contribution = Math.floor((seed * 1234567) % 10000) + kingdom.fundingProgress * 100;
+        
+        return {
+          id: kingdom.id,
+          name: kingdom.name,
+          creator: kingdom.creator,
+          contribution,
+          level: calculateLevel(kingdom),
+          reputation: calculateReputation(kingdom),
+          primaryColor: kingdom.primaryColor,
+          secondaryColor: kingdom.secondaryColor,
+          accentColor: kingdom.accentColor
+        };
+      });
+
+      // Sort by contribution and take top 10
+      const sortedEntries = entries
+        .sort((a, b) => b.contribution - a.contribution)
+        .slice(0, 10);
+
+      setLeaderboard(sortedEntries);
+    };
+
+    generateLeaderboard();
+  }, [kingdoms]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -53,22 +86,6 @@ export default function Battle() {
     return () => clearInterval(timer);
   }, []);
 
-  // Generate leaderboard data
-  const leaderboard: LeaderboardEntry[] = kingdoms
-    .map(kingdom => ({
-      id: kingdom.id,
-      name: kingdom.name,
-      creator: kingdom.creator,
-      contribution: Math.floor(Math.random() * 10000) + kingdom.fundingProgress * 100,
-      level: calculateLevel(kingdom),
-      reputation: calculateReputation(kingdom),
-      primaryColor: kingdom.primaryColor,
-      secondaryColor: kingdom.secondaryColor,
-      accentColor: kingdom.accentColor
-    }))
-    .sort((a, b) => b.contribution - a.contribution)
-    .slice(0, 10);
-
   const rewards = [
     { position: 1, tokens: 10000, color: 'from-yellow-400 to-yellow-600' },
     { position: 2, tokens: 7500, color: 'from-gray-300 to-gray-500' },
@@ -88,22 +105,25 @@ export default function Battle() {
 
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: position * 0.1 }}
-        className={`medieval-card !p-4 ${isTopThree ? 'animate-pulse' : ''}`}
+        layout
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ 
+          duration: 0.3,
+          layout: { duration: 0.3 }
+        }}
+        className={`medieval-card !p-4 ${isTopThree ? 'ring-4 ring-yellow-400/50' : ''}`}
         style={{
           background: entry.primaryColor && entry.secondaryColor 
             ? `linear-gradient(135deg, ${entry.primaryColor}, ${entry.secondaryColor})`
-            : undefined,
+            : 'linear-gradient(135deg, #A855F7, #F0ABFC)',
           borderColor: entry.accentColor || '#C084FC'
         }}
       >
         <div className="flex items-center gap-4">
           {/* Position Badge */}
-          <div className={`relative w-12 h-12 rounded-full flex items-center justify-center ${
-            isTopThree ? 'animate-bounce' : ''
-          }`}>
+          <div className={`relative w-12 h-12 rounded-full flex items-center justify-center`}>
             <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${reward.color} opacity-90`} />
             <div className="relative z-10 flex items-center justify-center">
               {position === 1 && <Crown className="w-6 h-6 text-white" />}
@@ -149,9 +169,14 @@ export default function Battle() {
 
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: position * 0.1 }}
+        layout
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ 
+          duration: 0.3,
+          layout: { duration: 0.3 }
+        }}
         className="medieval-card !bg-white/20 !border-white/30"
       >
         <div className="flex items-center gap-4 py-2">
@@ -252,16 +277,18 @@ export default function Battle() {
           </div>
 
           <div className="space-y-3">
-            {Array.from({ length: 10 }, (_, index) => {
-              const position = index + 1;
-              const entry = leaderboard[index];
-              
-              return entry ? (
-                <LeaderboardCard key={entry.id} entry={entry} position={position} />
-              ) : (
-                <EmptyLeaderboardCard key={position} position={position} />
-              );
-            })}
+            <AnimatePresence mode="popLayout">
+              {Array.from({ length: 10 }, (_, index) => {
+                const position = index + 1;
+                const entry = leaderboard[index];
+                
+                return entry ? (
+                  <LeaderboardCard key={`entry-${entry.id}`} entry={entry} position={position} />
+                ) : (
+                  <EmptyLeaderboardCard key={`empty-${position}`} position={position} />
+                );
+              })}
+            </AnimatePresence>
           </div>
 
           {/* Contribution Info */}
