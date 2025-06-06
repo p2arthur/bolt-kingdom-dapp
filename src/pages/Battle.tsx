@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sword, Trophy, Crown, Timer, Coins, Shield, Star, Flame } from 'lucide-react';
+import { Sword, Trophy, Crown, Timer, Coins, Star } from 'lucide-react';
 import { useKingdom } from '../contexts/KingdomContext';
 import { calculateLevel, calculateReputation } from '../lib/yjs';
 
@@ -87,76 +87,61 @@ export default function Battle() {
   }, []);
 
   const rewards = [
-    { position: 1, tokens: 10000, color: 'from-yellow-400 to-yellow-600' },
-    { position: 2, tokens: 7500, color: 'from-gray-300 to-gray-500' },
-    { position: 3, tokens: 5000, color: 'from-amber-600 to-amber-800' },
-    { position: 4, tokens: 3000, color: 'from-purple-500 to-purple-700' },
-    { position: 5, tokens: 2500, color: 'from-blue-500 to-blue-700' },
-    { position: 6, tokens: 2000, color: 'from-green-500 to-green-700' },
-    { position: 7, tokens: 1500, color: 'from-red-500 to-red-700' },
-    { position: 8, tokens: 1000, color: 'from-indigo-500 to-indigo-700' },
-    { position: 9, tokens: 750, color: 'from-pink-500 to-pink-700' },
-    { position: 10, tokens: 500, color: 'from-teal-500 to-teal-700' }
+    { position: 1, tokens: 10000 },
+    { position: 2, tokens: 7500 },
+    { position: 3, tokens: 5000 },
+    { position: 4, tokens: 3000 },
+    { position: 5, tokens: 2500 },
+    { position: 6, tokens: 2000 },
+    { position: 7, tokens: 1500 },
+    { position: 8, tokens: 1000 },
+    { position: 9, tokens: 750 },
+    { position: 10, tokens: 500 }
   ];
+
+  const getPositionIcon = (position: number) => {
+    if (position === 1) return <Crown className="w-5 h-5 text-yellow-400" />;
+    if (position === 2) return <Trophy className="w-5 h-5 text-gray-400" />;
+    if (position === 3) return <Star className="w-5 h-5 text-amber-600" />;
+    return <span className="text-lg font-bold text-white">#{position}</span>;
+  };
 
   const LeaderboardCard = ({ entry, position }: { entry: LeaderboardEntry; position: number }) => {
     const reward = rewards[position - 1];
-    const isTopThree = position <= 3;
 
     return (
       <motion.div
         layout
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 20 }}
         transition={{ 
           duration: 0.3,
           layout: { duration: 0.3 }
         }}
-        className={`medieval-card !p-4 ${isTopThree ? 'ring-4 ring-yellow-400/50' : ''}`}
-        style={{
-          background: entry.primaryColor && entry.secondaryColor 
-            ? `linear-gradient(135deg, ${entry.primaryColor}, ${entry.secondaryColor})`
-            : 'linear-gradient(135deg, #A855F7, #F0ABFC)',
-          borderColor: entry.accentColor || '#C084FC'
-        }}
+        className="bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl p-4 hover:bg-white/15 transition-colors"
       >
-        <div className="flex items-center gap-4">
-          {/* Position Badge */}
-          <div className={`relative w-12 h-12 rounded-full flex items-center justify-center`}>
-            <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${reward.color} opacity-90`} />
-            <div className="relative z-10 flex items-center justify-center">
-              {position === 1 && <Crown className="w-6 h-6 text-white" />}
-              {position === 2 && <Trophy className="w-6 h-6 text-white" />}
-              {position === 3 && <Star className="w-6 h-6 text-white" />}
-              {position > 3 && (
-                <span className="text-lg font-bold text-white">#{position}</span>
-              )}
+        <div className="flex items-center justify-between">
+          {/* Left side: Position + Kingdom Info */}
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              {getPositionIcon(position)}
+            </div>
+            
+            <div>
+              <h3 className="font-bold text-white text-lg">{entry.name}</h3>
+              <p className="text-white/70 text-sm">{entry.creator}</p>
             </div>
           </div>
 
-          {/* Kingdom Info */}
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-bold text-white text-lg">{entry.name}</h3>
-              <div className="flex items-center gap-1 px-2 py-1 bg-white/20 rounded-full backdrop-blur-sm">
-                <Star className="w-3 h-3 text-white" />
-                <span className="text-xs font-bold text-white">Lvl {entry.level}</span>
-              </div>
+          {/* Right side: Stats */}
+          <div className="text-right">
+            <div className="text-white font-bold text-lg">
+              {entry.contribution.toLocaleString()} pts
             </div>
-            <div className="flex items-center gap-2 text-sm text-white/90 mb-2">
-              <Shield className="w-4 h-4" />
-              <span>{entry.creator}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Flame className="w-4 h-4 text-white" />
-                <span className="font-bold text-white">{entry.contribution.toLocaleString()} pts</span>
-              </div>
-              <div className="flex items-center gap-1 text-white/90">
-                <Coins className="w-4 h-4" />
-                <span className="font-bold">{reward.tokens.toLocaleString()}</span>
-              </div>
+            <div className="flex items-center gap-1 text-white/80 text-sm justify-end">
+              <Coins className="w-4 h-4" />
+              <span>{reward.tokens.toLocaleString()} ALGO</span>
             </div>
           </div>
         </div>
@@ -170,25 +155,32 @@ export default function Battle() {
     return (
       <motion.div
         layout
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 20 }}
         transition={{ 
           duration: 0.3,
           layout: { duration: 0.3 }
         }}
-        className="medieval-card !bg-white/20 !border-white/30"
+        className="bg-white/5 backdrop-blur-sm border-2 border-white/10 rounded-xl p-4"
       >
-        <div className="flex items-center gap-4 py-2">
-          <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${reward.color} opacity-50 flex items-center justify-center`}>
-            <span className="text-lg font-bold text-white">#{position}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+              <span className="text-lg font-bold text-white/50">#{position}</span>
+            </div>
+            
+            <div>
+              <h3 className="font-bold text-white/50 text-lg">Empty Throne</h3>
+              <p className="text-white/30 text-sm">Awaiting a kingdom</p>
+            </div>
           </div>
-          <div className="flex-1">
-            <div className="text-white/50 font-bold">Empty Throne</div>
-            <div className="text-white/40 text-sm">Awaiting a worthy kingdom</div>
-            <div className="flex items-center gap-1 text-white/50 mt-1">
+
+          <div className="text-right">
+            <div className="text-white/50 font-bold text-lg">0 pts</div>
+            <div className="flex items-center gap-1 text-white/40 text-sm justify-end">
               <Coins className="w-4 h-4" />
-              <span className="font-bold">{reward.tokens.toLocaleString()}</span>
+              <span>{reward.tokens.toLocaleString()} ALGO</span>
             </div>
           </div>
         </div>
