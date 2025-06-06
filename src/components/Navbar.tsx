@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Scroll, ChevronDown, Book } from 'lucide-react';
+import { Scroll, ChevronDown, Book, Sword } from 'lucide-react';
 import { WalletButton } from '@txnlab/use-wallet-ui-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -83,6 +83,14 @@ export default function Navbar() {
               >
                 <Scroll className="w-4 h-4" />
                 <span>Oracle</span>
+              </Link>
+              
+              <Link 
+                to="/battle" 
+                className="flex items-center gap-2 text-amber-950 hover:text-amber-800 transition-colors font-bold text-sm"
+              >
+                <Sword className="w-4 h-4" />
+                <span>Battle</span>
               </Link>
               
               <Link 
