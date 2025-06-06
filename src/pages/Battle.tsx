@@ -176,7 +176,7 @@ export default function Battle() {
       <div 
         className="absolute inset-0 z-0"
         style={{
-          backgroundImage: `url('/images/kingdom-dapp-arena-bg.png')`,
+          backgroundImage: `url('/images/kingdom-dapp-arena-bg copy.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
