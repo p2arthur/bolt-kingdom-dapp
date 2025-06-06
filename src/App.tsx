@@ -8,7 +8,6 @@ import ProjectDetails from './pages/ProjectDetails';
 import Oracle from './pages/Oracle';
 import RoundTable from './pages/RoundTable';
 import FortunePit from './pages/FortunePit';
-import Forge from './pages/Forge';
 import Docs from './pages/Docs';
 import Background from './components/Background';
 import Navbar from './components/Navbar';
@@ -38,7 +37,6 @@ function AppContent() {
         <Route path="/" element={<Home />} />
         <Route path="/project/:id" element={<ProjectDetails />} />
         <Route path="/oracle" element={<Oracle />} />
-        <Route path="/forge" element={<Forge />} />
         <Route path="/docs" element={<Docs />} />
         <Route path="/dapp/round-table/:appId" element={<RoundTable />} />
         <Route path="/dapp/the-fortune-pit/:appId" element={<FortunePit />} />
