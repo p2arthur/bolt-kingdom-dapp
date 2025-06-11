@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Scroll, ChevronDown, Book, Sword } from 'lucide-react';
-import { WalletButton } from '@txnlab/use-wallet-ui-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import WalletButton from './WalletButton';
 
 export default function Navbar() {
   const [network, setNetwork] = useState<'mainnet' | 'testnet'>('mainnet');
@@ -103,9 +103,7 @@ export default function Navbar() {
             </div>
           </div>
           
-          <div data-wallet-ui>
-            <WalletButton className="bg-red-300"/>
-          </div>
+          <WalletButton />
         </div>
       </nav>
     </>
