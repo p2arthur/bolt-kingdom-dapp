@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Crown, Users, Coins, Vote, Globe, Code, Shield, TrendingUp, Timer, Sword, Scroll, Star, Trophy, Zap, Flag } from 'lucide-react';
+import { ArrowLeft, Crown, Users, Coins, Vote, Globe, Code, Shield, TrendingUp, Timer, Sword, Scroll, Star, Trophy, Zap, Palette } from 'lucide-react';
 import { sharedProjects, calculateLevel, calculateReputation } from '../lib/yjs';
 import { useKingdom } from '../contexts/KingdomContext';
 import FavoriteButton from '../components/FavoriteButton';
@@ -205,28 +205,35 @@ function ProjectDetails() {
   ] : [];
 
   return (
-    <div 
-      className="min-h-screen px-4 py-12 page-top-padding relative"
-      style={{
-        background: `linear-gradient(135deg, ${displayColors.background}20, ${displayColors.primary}10, ${displayColors.secondary}10)`,
-      }}
-    >
-      {/* Custom Kingdom Flag */}
+    <div className="min-h-screen px-4 py-12 page-top-padding">
+      {/* Kingdom Color Palette - Fixed Position */}
       <div className="fixed top-24 right-8 z-30">
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="relative"
+          className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg border-2 border-amber-950"
         >
-          <div 
-            className="w-16 h-24 rounded-lg shadow-lg border-4 border-white/20 flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, ${displayColors.primary}, ${displayColors.secondary})`,
-            }}
-          >
-            <Flag className="w-8 h-8 text-white" />
+          <div className="flex items-center gap-2 mb-3">
+            <Palette className="w-4 h-4 text-amber-950" />
+            <span className="text-sm font-bold text-amber-950">Kingdom Colors</span>
           </div>
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-8 bg-amber-950"></div>
+          <div className="flex gap-2">
+            <div 
+              className="w-8 h-8 rounded-full border-2 border-white shadow-md"
+              style={{ backgroundColor: displayColors.primary }}
+              title="Primary Color"
+            />
+            <div 
+              className="w-8 h-8 rounded-full border-2 border-white shadow-md"
+              style={{ backgroundColor: displayColors.secondary }}
+              title="Secondary Color"
+            />
+            <div 
+              className="w-8 h-8 rounded-full border-2 border-white shadow-md"
+              style={{ backgroundColor: displayColors.accent }}
+              title="Accent Color"
+            />
+          </div>
         </motion.div>
       </div>
 
@@ -247,48 +254,22 @@ function ProjectDetails() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
-          {/* Header Card with Custom Colors */}
-          <div 
-            className="medieval-card relative overflow-hidden"
-            style={{
-              background: `linear-gradient(135deg, ${displayColors.primary}15, ${displayColors.secondary}15)`,
-              borderColor: displayColors.accent,
-            }}
-          >
-            {/* Color accent bar */}
-            <div 
-              className="absolute top-0 left-0 right-0 h-2"
-              style={{
-                background: `linear-gradient(90deg, ${displayColors.primary}, ${displayColors.accent}, ${displayColors.secondary})`,
-              }}
-            />
-            
-            <div className="flex items-center gap-6 mb-8 pt-4">
-              <div 
-                className="p-4 rounded-xl border-4"
-                style={{
-                  background: `linear-gradient(135deg, ${displayColors.primary}, ${displayColors.secondary})`,
-                  borderColor: displayColors.accent,
-                }}
-              >
+          {/* Simplified Header Card */}
+          <div className="medieval-card">
+            <div className="flex items-center gap-6 mb-6">
+              <div className="p-4 rounded-xl bg-amber-950">
                 {project.isAlgorand ? (
-                  <Zap className="w-12 h-12 text-white" />
+                  <Zap className="w-12 h-12 text-amber-100" />
                 ) : (
-                  <Crown className="w-12 h-12 text-white" />
+                  <Crown className="w-12 h-12 text-amber-100" />
                 )}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h1 className="text-4xl font-bold text-amber-950">{displayName}</h1>
-                  <div 
-                    className="flex items-center gap-1 px-3 py-1 rounded-full border-2"
-                    style={{
-                      backgroundColor: `${displayColors.accent}20`,
-                      borderColor: displayColors.accent,
-                    }}
-                  >
-                    <Star className="w-4 h-4" style={{ color: displayColors.accent }} />
-                    <span className="font-bold" style={{ color: displayColors.accent }}>Lvl {level}</span>
+                  <div className="flex items-center gap-1 px-3 py-1 bg-amber-900/10 rounded-full border-2 border-amber-950">
+                    <Star className="w-4 h-4 text-amber-950" />
+                    <span className="font-bold text-amber-950">Lvl {level}</span>
                   </div>
                   {project.isAlgorand && (
                     <div className="flex items-center gap-1 px-3 py-1 bg-green-100 rounded-full border-2 border-green-600">
@@ -308,7 +289,7 @@ function ProjectDetails() {
               </div>
             </div>
             
-            <p className="text-lg text-amber-950/90 mb-8">
+            <p className="text-lg text-amber-950/90 mb-6">
               {displayDescription}
             </p>
 
@@ -327,18 +308,14 @@ function ProjectDetails() {
               </div>
             )}
 
-            {/* Stats Grid */}
+            {/* Simplified Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {(algorandData ? algorandStats : stats).map((stat, index) => (
                 <div 
                   key={index}
-                  className="rounded-xl p-4 border-2"
-                  style={{
-                    backgroundColor: `${displayColors.primary}10`,
-                    borderColor: `${displayColors.accent}50`,
-                  }}
+                  className="bg-amber-900/10 rounded-xl p-4 border-2 border-amber-950"
                 >
-                  <stat.icon className="w-6 h-6 mb-2" style={{ color: displayColors.accent }} />
+                  <stat.icon className="w-6 h-6 text-amber-950 mb-2" />
                   <div className="text-xl font-bold text-amber-950">
                     {stat.value}{stat.suffix}
                   </div>
@@ -349,7 +326,7 @@ function ProjectDetails() {
 
             {/* Algorand-specific info */}
             {algorandData && (
-              <div className="mt-6 pt-6 border-t-2" style={{ borderColor: `${displayColors.accent}30` }}>
+              <div className="mt-6 pt-6 border-t-2 border-amber-950">
                 <h3 className="text-lg font-bold text-amber-950 mb-4 flex items-center gap-2">
                   <Code className="w-5 h-5" />
                   Algorand Contract Details
@@ -376,37 +353,9 @@ function ProjectDetails() {
                 </div>
               </div>
             )}
-
-            {/* Reputation Progress */}
-            <div className="mt-6 pt-6 border-t-2" style={{ borderColor: `${displayColors.accent}30` }}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5" style={{ color: displayColors.accent }} />
-                  <span className="font-bold text-amber-950">Reputation Progress</span>
-                </div>
-                <span className="text-sm text-amber-950/70">
-                  Next Level: {(Math.floor(reputation / 1000) + 1) * 1000} XP
-                </span>
-              </div>
-              <div 
-                className="h-4 rounded-full overflow-hidden border-2"
-                style={{
-                  backgroundColor: `${displayColors.primary}20`,
-                  borderColor: displayColors.accent,
-                }}
-              >
-                <div 
-                  className="h-full"
-                  style={{ 
-                    width: `${(reputation % 1000) / 10}%`,
-                    background: `linear-gradient(90deg, ${displayColors.primary}, ${displayColors.accent})`,
-                  }}
-                />
-              </div>
-            </div>
           </div>
 
-          {/* Progress Section */}
+          {/* Simplified Progress Section */}
           <div className="medieval-card">
             <h2 className="text-2xl font-bold text-amber-950 mb-6 flex items-center gap-2">
               <Timer className="w-6 h-6" />
@@ -418,19 +367,10 @@ function ProjectDetails() {
                 <span className="text-amber-950/80">Current Progress</span>
                 <span className="font-bold text-amber-950">{project.fundingProgress}%</span>
               </div>
-              <div 
-                className="h-4 rounded-full overflow-hidden border-2"
-                style={{
-                  backgroundColor: `${displayColors.primary}20`,
-                  borderColor: displayColors.accent,
-                }}
-              >
+              <div className="h-4 bg-amber-900/20 rounded-full overflow-hidden border-2 border-amber-950">
                 <div 
-                  className="h-full"
-                  style={{ 
-                    width: `${project.fundingProgress}%`,
-                    background: `linear-gradient(90deg, ${displayColors.primary}, ${displayColors.secondary})`,
-                  }}
+                  className="h-full bg-amber-950"
+                  style={{ width: `${project.fundingProgress}%` }}
                 />
               </div>
               <div className="flex justify-between text-sm text-amber-950/70">
@@ -440,7 +380,7 @@ function ProjectDetails() {
             </div>
           </div>
 
-          {/* Features Grid */}
+          {/* Simplified Features Grid */}
           <div className="medieval-card">
             <h2 className="text-2xl font-bold text-amber-950 mb-6 flex items-center gap-2">
               <Sword className="w-6 h-6" />
@@ -454,16 +394,12 @@ function ProjectDetails() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className={`rounded-xl p-6 border-2 transition-all ${
-                    feature.link ? 'cursor-pointer hover:scale-105' : ''
+                  className={`bg-amber-900/10 rounded-xl p-6 border-2 border-amber-950 transition-all ${
+                    feature.link ? 'cursor-pointer hover:bg-amber-900/20' : ''
                   }`}
-                  style={{
-                    backgroundColor: `${displayColors.primary}10`,
-                    borderColor: `${displayColors.accent}50`,
-                  }}
                   onClick={() => feature.link && window.location.assign(feature.link)}
                 >
-                  <feature.icon className="w-8 h-8 mb-4" style={{ color: displayColors.accent }} />
+                  <feature.icon className="w-8 h-8 text-amber-950 mb-4" />
                   <h3 className="text-lg font-bold text-amber-950 mb-2">{feature.name}</h3>
                   <p className="text-amber-950/70">{feature.description}</p>
                 </motion.div>
@@ -471,27 +407,13 @@ function ProjectDetails() {
             </div>
           </div>
 
-          {/* Action Buttons */}
+          {/* Simplified Action Buttons */}
           <div className="flex justify-center gap-4">
-            <button 
-              className="medieval-button flex items-center gap-2"
-              style={{
-                backgroundColor: `${displayColors.primary}20`,
-                borderColor: displayColors.accent,
-                color: displayColors.accent,
-              }}
-            >
+            <button className="medieval-button flex items-center gap-2">
               <Scroll className="w-5 h-5" />
               <span>View Documentation</span>
             </button>
-            <button 
-              className="medieval-button flex items-center gap-2"
-              style={{
-                backgroundColor: `${displayColors.secondary}20`,
-                borderColor: displayColors.accent,
-                color: displayColors.accent,
-              }}
-            >
+            <button className="medieval-button flex items-center gap-2">
               <Code className="w-5 h-5" />
               <span>View Source</span>
             </button>
