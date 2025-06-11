@@ -8,6 +8,11 @@ interface RecentKingdomsListProps {
 }
 
 export default function RecentKingdomsList({ recentProjects }: RecentKingdomsListProps) {
+  // Don't render if no recent projects
+  if (!recentProjects || recentProjects.length === 0) {
+    return null;
+  }
+
   return (
     <div className="fixed top-20 left-0 right-0 z-40 h-14 bg-[#f5a105]/95 backdrop-blur-lg border-b-4 border-amber-950 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center">
@@ -23,22 +28,15 @@ export default function RecentKingdomsList({ recentProjects }: RecentKingdomsLis
         
         <div className="flex-1 overflow-x-auto scrollbar-hide">
           <AnimatePresence mode="popLayout">
-            {recentProjects.length > 0 ? (
-              <div className="flex gap-4 min-w-max pr-4">
-                {recentProjects.map((project, index) => (
-                  <RecentProjectCard 
-                    key={project.id} 
-                    project={project} 
-                    index={index}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-amber-950/70">
-                <Sword className="w-4 h-4" />
-                <span className="text-sm">No kingdoms have been forged yet</span>
-              </div>
-            )}
+            <div className="flex gap-4 min-w-max pr-4">
+              {recentProjects.map((project, index) => (
+                <RecentProjectCard 
+                  key={`${project.id}-${index}`} 
+                  project={project} 
+                  index={index}
+                />
+              ))}
+            </div>
           </AnimatePresence>
         </div>
       </div>

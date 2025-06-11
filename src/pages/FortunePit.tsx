@@ -59,7 +59,7 @@ export default function FortunePit() {
   );
 
   return (
-    <div className="relative min-h-screen pt-32 pb-20">
+    <div className="relative min-h-screen page-top-padding">
       <div 
         className="absolute inset-0 z-0"
         style={{
@@ -71,7 +71,7 @@ export default function FortunePit() {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-900/20 to-[#f5a105] z-10" />
       
-      <div className="relative z-20 max-w-4xl mx-auto px-4">
+      <div className="relative z-20 max-w-4xl mx-auto px-4 py-8">
         <div className="mb-12">
           <h1 className="text-3xl font-bold text-amber-100 mb-2">The Fortune Pit</h1>
           <p className="text-amber-200/70">App ID: {appId}</p>

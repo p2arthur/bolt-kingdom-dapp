@@ -157,9 +157,14 @@
     @apply text-red-600 hover:text-red-700 hover:bg-red-50;
   }
 
-  /* Page Layout Adjustments */
+  /* Page Layout Adjustments for Recent Kingdoms */
   .page-top-padding {
     @apply pt-40; /* Accounts for network strip + navbar + recent kingdoms */
+  }
+
+  /* Ensure recent kingdoms are always visible */
+  .page-top-padding-with-recent {
+    @apply pt-40; /* Same as page-top-padding but explicit for pages with recent kingdoms */
   }
 }
 

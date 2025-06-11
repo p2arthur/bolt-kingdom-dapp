@@ -157,7 +157,7 @@ export default function RoundTable() {
   );
 
   return (
-    <div className="relative min-h-screen pt-32 pb-20">
+    <div className="relative min-h-screen page-top-padding">
       <div 
         className="absolute inset-0 z-0"
         style={{
@@ -169,7 +169,7 @@ export default function RoundTable() {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-900/20 to-[#f5a105] z-10" />
       
-      <div className="relative z-20 max-w-4xl mx-auto px-4">
+      <div className="relative z-20 max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-amber-950 mb-2">Round Table</h1>
