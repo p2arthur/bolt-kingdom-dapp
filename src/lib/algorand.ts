@@ -33,54 +33,6 @@ interface AlgorandKingdom {
  */
 export async function fetchActiveKingdomIds(): Promise<KingdomIdsResponse> {
   try {
-    console.log('🔗 Fetching kingdom IDs from Algorand testnet...');
-    
-    const response = await fetch(
-      'https://testnet-idx.4160.nodely.dev/v2/applications/740978143/box?name=b64:a2luZ2RvbXM='
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: AlgorandBoxResponse = await response.json();
-    if (!data.value) {
-      throw new Error('No value field in response');
-    }
-
-    const base64Value = data.value;
-    const binaryString = atob(base64Value);
-    const buffer = new ArrayBuffer(binaryString.length);
-    const view = new Uint8Array(buffer);
-
-    for (let i = 0; i < binaryString.length; i++) {
-      view[i] = binaryString.charCodeAt(i);
-    }
-
-    const dataView = new DataView(buffer);
-    const activeKingdomIds: number[] = [];
-
-    // Read 4-byte big-endian unsigned integers
-    for (let offset = 0; offset + 4 <= buffer.byteLength; offset += 4) {
-      const kingdomId = dataView.getUint32(offset, false); // false = big-endian
-      activeKingdomIds.push(kingdomId);
-    }
-
-    console.log('✅ Decoded kingdom IDs:', activeKingdomIds);
-    return { activeKingdomIds };
-
-  } catch (error) {
-    console.error('❌ Error fetching kingdom IDs:', error);
-    throw error;
-  }
-}
-
-
-/**
- * Alternative decoding method using DataView for more precise control
- */
-export async function fetchActiveKingdomIds(): Promise<KingdomIdsResponse> {
-  try {
     const response = await fetch(
       'https://testnet-idx.4160.nodely.dev/v2/applications/740978143/box?name=b64:a2luZ2RvbXM='
     );
@@ -121,6 +73,63 @@ export async function fetchActiveKingdomIds(): Promise<KingdomIdsResponse> {
   }
 }
 
+
+
+/**
+ * Alternative decoding method using DataView for more precise control
+ */
+export async function fetchActiveKingdomIdsAlt(): Promise<KingdomIdsResponse> {
+  try {
+    console.log('🔗 Fetching kingdom IDs from Algorand testnet (alternative method)...');
+    
+    const response = await fetch(
+      'https://testnet-idx.4160.nodely.dev/v2/applications/740978143/box?name=b64:a2luZ2RvbXM='
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: AlgorandBoxResponse = await response.json();
+    
+    if (!data.value) {
+      throw new Error('No value field in response');
+    }
+
+    // Decode base64 to ArrayBuffer
+    const base64Value = data.value;
+    const binaryString = atob(base64Value);
+    const buffer = new ArrayBuffer(binaryString.length);
+    const view = new Uint8Array(buffer);
+    
+    for (let i = 0; i < binaryString.length; i++) {
+      view[i] = binaryString.charCodeAt(i);
+    }
+
+    // Use DataView for precise big-endian reading
+    const dataView = new DataView(buffer);
+    const activeKingdomIds: number[] = [];
+    
+    // Read 4-byte chunks as big-endian uint32
+    for (let offset = 0; offset < buffer.byteLength; offset += 4) {
+      if (offset + 4 <= buffer.byteLength) {
+        const kingdomId = dataView.getUint32(offset, false); // false = big-endian
+        activeKingdomIds.push(kingdomId);
+        console.log(`🏰 Decoded kingdom ID at offset ${offset}:`, kingdomId);
+      }
+    }
+
+    console.log('✅ Successfully decoded kingdom IDs (alt method):', activeKingdomIds);
+    
+    return {
+      activeKingdomIds
+    };
+
+  } catch (error) {
+    console.error('❌ Error fetching kingdom IDs (alt method):', error);
+    throw error;
+  }
+}
 
 /**
  * Converts Algorand kingdom IDs to kingdom objects for display
