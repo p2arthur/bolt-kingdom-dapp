@@ -104,34 +104,33 @@ export const loadEventsFromStorage = (): RecentEvent[] => {
   }
 }
 
-// Reset functions
-export const resetAllData = () => {
-  console.log('🔄 Resetting all data arrays...')
+// Initialize YJS arrays with localStorage data
+export const initializeFromStorage = () => {
+  console.log('🚀 Initializing YJS arrays from localStorage...')
   
-  // Clear YJS arrays
-  sharedProjects.delete(0, sharedProjects.length)
-  sharedProposals.delete(0, sharedProposals.length)
-  sharedEvents.delete(0, sharedEvents.length)
-  
-  // Load from localStorage and populate YJS arrays
-  const storedKingdoms = loadKingdomsFromStorage()
-  const storedProposals = loadProposalsFromStorage()
-  const storedEvents = loadEventsFromStorage()
-  
-  // Populate YJS arrays with stored data
-  if (storedKingdoms.length > 0) {
-    sharedProjects.push(storedKingdoms)
-    console.log('🏰 Restored kingdoms to YJS:', storedKingdoms.length)
+  // Only initialize if arrays are empty
+  if (sharedProjects.length === 0) {
+    const storedKingdoms = loadKingdomsFromStorage()
+    if (storedKingdoms.length > 0) {
+      sharedProjects.push(storedKingdoms)
+      console.log('🏰 Initialized kingdoms in YJS:', storedKingdoms.length)
+    }
   }
   
-  if (storedProposals.length > 0) {
-    sharedProposals.push(storedProposals)
-    console.log('📜 Restored proposals to YJS:', storedProposals.length)
+  if (sharedProposals.length === 0) {
+    const storedProposals = loadProposalsFromStorage()
+    if (storedProposals.length > 0) {
+      sharedProposals.push(storedProposals)
+      console.log('📜 Initialized proposals in YJS:', storedProposals.length)
+    }
   }
   
-  if (storedEvents.length > 0) {
-    sharedEvents.push(storedEvents)
-    console.log('⚡ Restored events to YJS:', storedEvents.length)
+  if (sharedEvents.length === 0) {
+    const storedEvents = loadEventsFromStorage()
+    if (storedEvents.length > 0) {
+      sharedEvents.push(storedEvents)
+      console.log('⚡ Initialized events in YJS:', storedEvents.length)
+    }
   }
 }
 
@@ -263,5 +262,8 @@ sharedEvents.observe((event) => {
   saveEventsToStorage(allEvents)
   console.log('🔄 Current events array:', allEvents)
 })
+
+// Initialize on module load
+initializeFromStorage()
 
 export { ydoc, provider, sharedProjects, sharedProposals, sharedEvents }

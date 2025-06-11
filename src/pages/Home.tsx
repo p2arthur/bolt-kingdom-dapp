@@ -9,10 +9,10 @@ import CreateProjectModal from '../components/CreateProjectModal';
 import ProjectCard from '../components/ProjectCard';
 
 function Home() {
-  const { kingdoms, favoriteKingdoms, resetData } = useKingdom();
+  const { kingdoms, favoriteKingdoms, refreshData } = useKingdom();
   const [scrollY, setScrollY] = useState(0);
   const [currentSection, setCurrentSection] = useState(0);
-  const [hasReset, setHasReset] = useState(false);
+  const [hasRefreshed, setHasRefreshed] = useState(false);
   
   const heroRef = useRef(null);
   const activeKingdomsRef = useRef(null);
@@ -24,19 +24,19 @@ function Home() {
     ...(favoriteKingdoms.length > 0 ? [{ ref: favoritesRef, label: 'Favorites' }] : [])
   ];
 
-  // Reset data when visiting home page
+  // Refresh data when visiting home page
   useEffect(() => {
-    if (!hasReset) {
-      console.log('🏠 Home - Resetting data on page visit...');
-      resetData();
-      setHasReset(true);
+    if (!hasRefreshed) {
+      console.log('🏠 Home - Refreshing data on page visit...');
+      refreshData();
+      setHasRefreshed(true);
     }
-  }, [resetData, hasReset]);
+  }, [refreshData, hasRefreshed]);
 
-  // Reset hasReset when component unmounts (user navigates away)
+  // Reset hasRefreshed when component unmounts (user navigates away)
   useEffect(() => {
     return () => {
-      setHasReset(false);
+      setHasRefreshed(false);
     };
   }, []);
 
@@ -125,7 +125,7 @@ function Home() {
   console.log('🏠 - favoriteKingdoms:', favoriteKingdoms);
   console.log('🏠 - Raw YJS array:', sharedProjects.toArray());
   console.log('🏠 - YJS array length:', sharedProjects.length);
-  console.log('🏠 - hasReset:', hasReset);
+  console.log('🏠 - hasRefreshed:', hasRefreshed);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -244,7 +244,7 @@ function Home() {
                 <div>- Context kingdoms: {kingdoms.length}</div>
                 <div>- YJS array length: {sharedProjects.length}</div>
                 <div>- YJS contents: {JSON.stringify(sharedProjects.toArray().map(k => k.name))}</div>
-                <div>- Has reset: {hasReset ? 'Yes' : 'No'}</div>
+                <div>- Has refreshed: {hasRefreshed ? 'Yes' : 'No'}</div>
                 <div>- Kingdom names: {kingdoms.map(k => k.name).join(', ')}</div>
               </div>
               

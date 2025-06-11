@@ -8,10 +8,7 @@ import {
   getAllEvents, 
   RecentEvent, 
   EVENT_TYPES,
-  resetAllData,
-  loadKingdomsFromStorage,
-  loadProposalsFromStorage,
-  loadEventsFromStorage
+  initializeFromStorage
 } from '../lib/yjs';
 
 interface Kingdom {
@@ -54,7 +51,7 @@ interface KingdomContextType {
   updateKingdoms: () => void;
   updateProposals: () => void;
   updateEvents: () => void;
-  resetData: () => void;
+  refreshData: () => void;
 }
 
 const KingdomContext = createContext<KingdomContextType | undefined>(undefined);
@@ -105,9 +102,11 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     setRecentEvents(sortedEvents);
   };
 
-  const resetData = () => {
-    console.log('🔄 KingdomContext - Resetting all data...');
-    resetAllData();
+  const refreshData = () => {
+    console.log('🔄 KingdomContext - Refreshing all data...');
+    
+    // Re-initialize from storage to ensure we have latest data
+    initializeFromStorage();
     
     // Force update all states
     updateKingdoms();
@@ -131,8 +130,13 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     
     console.log('🚀 KingdomProvider initializing...');
     
-    // Reset and load data from localStorage
-    resetData();
+    // Initialize from localStorage
+    initializeFromStorage();
+    
+    // Load initial data
+    updateKingdoms();
+    updateProposals();
+    updateEvents();
     
     // Set up observers for real-time updates
     const projectsObserver = (event) => {
@@ -180,7 +184,7 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
       updateKingdoms,
       updateProposals,
       updateEvents,
-      resetData
+      refreshData
     }}>
       {children}
     </KingdomContext.Provider>

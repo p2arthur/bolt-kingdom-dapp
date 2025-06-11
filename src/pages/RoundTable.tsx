@@ -21,9 +21,15 @@ interface Proposal {
 export default function RoundTable() {
   const { appId } = useParams();
   const { activeAccount } = useWallet();
-  const { proposals, updateProposals } = useKingdom();
+  const { proposals, refreshData } = useKingdom();
 
   console.log('🏛️ RoundTable - Current proposals from context:', proposals);
+
+  // Refresh data on mount to ensure we have latest proposals
+  useEffect(() => {
+    console.log('🏛️ RoundTable - Refreshing data on mount...');
+    refreshData();
+  }, [refreshData]);
 
   // Load proposals on mount and when context updates
   useEffect(() => {
@@ -55,8 +61,8 @@ export default function RoundTable() {
   const handleProposalCreated = (proposal: Proposal) => {
     console.log('🏛️ RoundTable - Proposal created callback triggered:', proposal);
     // The proposal is already added to YJS in the modal
-    // Just trigger a context update to ensure sync
-    updateProposals();
+    // Just trigger a context refresh to ensure sync
+    refreshData();
   };
 
   const ProposalCard = ({ proposal }: { proposal: Proposal }) => {
