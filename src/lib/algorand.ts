@@ -56,6 +56,7 @@ export async function fetchActiveKingdomIds(): Promise<KingdomIdsResponse> {
 }
 
 
+
 /**
  * Alternative decoding method using DataView for more precise control
  */
