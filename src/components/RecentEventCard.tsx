@@ -30,27 +30,21 @@ const getEventColors = (type: string, index: number, metadata?: any) => {
     // Use kingdom's custom colors if available
     if (metadata?.colors?.primaryColor && metadata?.colors?.secondaryColor) {
       return {
-        background: index === 0 
-          ? `linear-gradient(135deg, ${metadata.colors.primaryColor}, ${metadata.colors.secondaryColor})`
-          : `linear-gradient(135deg, ${metadata.colors.primaryColor}40, ${metadata.colors.secondaryColor}40)`,
+        background: `linear-gradient(135deg, ${metadata.colors.primaryColor}, ${metadata.colors.secondaryColor})`,
         border: metadata.colors.accentColor || '#C084FC'
       };
     }
     
     return {
-      background: index === 0 
-        ? 'linear-gradient(135deg, #A855F7, #F0ABFC)'
-        : 'rgba(168, 85, 247, 0.2)',
-      border: index === 0 ? '#C084FC' : 'rgba(120, 53, 15, 0.3)'
+      background: 'linear-gradient(135deg, #A855F7, #F0ABFC)',
+      border: '#C084FC'
     };
   }
   
   if (type === EVENT_TYPES.PROPOSAL_CREATED) {
     return {
-      background: index === 0 
-        ? 'linear-gradient(135deg, #E879F9, #F3E8FF)' // Bright pastel purple-pink
-        : 'rgba(232, 121, 249, 0.3)',
-      border: index === 0 ? '#C084FC' : 'rgba(192, 132, 252, 0.5)'
+      background: 'linear-gradient(135deg, #E879F9, #F3E8FF)',
+      border: '#C084FC'
     };
   }
   
@@ -79,15 +73,12 @@ export default function RecentEventCard({ event, index }: RecentEventCardProps) 
   const colors = getEventColors(event.type, index, event.metadata);
   const isKingdomEvent = event.type === EVENT_TYPES.KINGDOM_CREATED;
   const isProposalEvent = event.type === EVENT_TYPES.PROPOSAL_CREATED;
-  const isNewKingdom = isKingdomEvent && index === 0;
-  const isNewProposal = isProposalEvent && index === 0;
 
   // Check if the related item still exists for events with links
   const kingdom = isKingdomEvent && event.relatedId ? getKingdom(event.relatedId) : null;
   const proposal = isProposalEvent && event.relatedId ? getProposal(event.relatedId) : null;
   
   const isValidKingdomLink = isKingdomEvent && kingdom;
-  const isValidProposalLink = isProposalEvent && proposal;
 
   const cardContent = (
     <motion.div
@@ -95,10 +86,10 @@ export default function RecentEventCard({ event, index }: RecentEventCardProps) 
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ delay: index * 0.1 }}
-      className={`flex items-center gap-3 py-1 px-3 rounded-lg ${(isValidKingdomLink || isValidProposalLink) ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''} ${isNewKingdom ? 'animate-kingdom-blink' : ''} ${isNewProposal ? 'animate-proposal-blink' : ''}`}
+      className={`flex items-center gap-3 py-2 px-4 rounded-lg ${(isValidKingdomLink) ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
       style={{
         background: colors.background,
-        border: `3px solid ${colors.border}`,
+        border: `2px solid ${colors.border}`,
       }}
     >
       <div className="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
@@ -107,16 +98,6 @@ export default function RecentEventCard({ event, index }: RecentEventCardProps) 
       <div>
         <div className="flex items-center gap-2">
           <span className="font-bold text-white text-sm">{event.title}</span>
-          {isNewKingdom && (
-            <span className="px-1.5 py-0.5 bg-white/20 text-white text-xs font-bold rounded-full animate-pulse backdrop-blur-sm">
-              NEW
-            </span>
-          )}
-          {isNewProposal && (
-            <span className="px-1.5 py-0.5 bg-white/20 text-white text-xs font-bold rounded-full animate-pulse backdrop-blur-sm">
-              NEW
-            </span>
-          )}
           {isKingdomEvent && (
             <div className="flex items-center gap-1 px-1.5 py-0.5 bg-white/10 rounded-full backdrop-blur-sm">
               <Crown className="w-3 h-3 text-white" />
@@ -149,9 +130,6 @@ export default function RecentEventCard({ event, index }: RecentEventCardProps) 
     );
   }
 
-  // For proposal events, we could link to a proposal page if we had one
-  // For now, just display the card without a link
-  
-  // For other events or invalid links, just display the card
+  // For other events, just display the card
   return cardContent;
 }
