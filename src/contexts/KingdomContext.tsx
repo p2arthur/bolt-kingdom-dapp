@@ -1,5 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { sharedProjects, sharedEvents, RecentEvent, EVENT_TYPES } from '../lib/yjs';
+import { 
+  sharedProjects, 
+  sharedProposals, 
+  sharedEvents, 
+  getAllKingdoms, 
+  getAllProposals, 
+  getAllEvents, 
+  RecentEvent, 
+  EVENT_TYPES 
+} from '../lib/yjs';
 
 interface Kingdom {
   id: string;
@@ -19,12 +28,27 @@ interface Kingdom {
   }>;
 }
 
+interface Proposal {
+  id: string;
+  title: string;
+  description: string;
+  creator: string;
+  expiresAt: Date;
+  votes?: {
+    yes: string[];
+    no: string[];
+  };
+}
+
 interface KingdomContextType {
   kingdoms: Kingdom[];
+  proposals: Proposal[];
   recentEvents: RecentEvent[];
   favoriteKingdoms: Kingdom[];
   getKingdom: (id: string) => Kingdom | undefined;
+  getProposal: (id: string) => Proposal | undefined;
   updateKingdoms: () => void;
+  updateProposals: () => void;
   updateEvents: () => void;
 }
 
@@ -36,6 +60,7 @@ const RECENT_EVENTS_MAX = 8; // Maximum number of recent events to keep
 
 export function KingdomProvider({ children }: { children: React.ReactNode }) {
   const [kingdoms, setKingdoms] = useState<Kingdom[]>([]);
+  const [proposals, setProposals] = useState<Proposal[]>([]);
   const [recentEvents, setRecentEvents] = useState<RecentEvent[]>([]);
   const [favoriteKingdoms, setFavoriteKingdoms] = useState<Kingdom[]>([]);
 
@@ -60,10 +85,10 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateKingdoms = () => {
-    const allKingdoms = sharedProjects.toArray();
+    const allKingdoms = getAllKingdoms();
     const favorites = JSON.parse(localStorage.getItem('kingdom_favorites') || '[]');
     
-    console.log('Updating kingdoms:', allKingdoms); // Debug log
+    console.log('Updating kingdoms from shared projects:', allKingdoms);
     
     // Update kingdoms list (newest first)
     const reversedKingdoms = [...allKingdoms].reverse();
@@ -73,11 +98,20 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     setFavoriteKingdoms(allKingdoms.filter(kingdom => favorites.includes(kingdom.id)));
   };
 
+  const updateProposals = () => {
+    const allProposals = getAllProposals();
+    console.log('Updating proposals from shared proposals:', allProposals);
+    
+    // Update proposals list (newest first)
+    const reversedProposals = [...allProposals].reverse();
+    setProposals(reversedProposals);
+  };
+
   const updateEvents = () => {
-    const allEvents = sharedEvents.toArray();
+    const allEvents = getAllEvents();
     const storedEvents = loadRecentEvents();
     
-    console.log('Updating events - shared:', allEvents, 'stored:', storedEvents); // Debug log
+    console.log('Updating events - shared:', allEvents, 'stored:', storedEvents);
     
     // Combine shared events with stored events, remove duplicates, and sort by timestamp
     const combinedEvents = [...allEvents, ...storedEvents];
@@ -98,31 +132,43 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     return kingdoms.find(kingdom => kingdom.id === id);
   };
 
+  const getProposal = (id: string) => {
+    return proposals.find(proposal => proposal.id === id);
+  };
+
   // Initialize on mount
   useEffect(() => {
-    console.log('KingdomProvider initializing...'); // Debug log
+    console.log('KingdomProvider initializing...');
     
     // Load initial data
     updateKingdoms();
+    updateProposals();
     updateEvents();
     
     // Set up observers for real-time updates
     const projectsObserver = () => {
-      console.log('Projects changed, updating kingdoms...'); // Debug log
+      console.log('Projects changed, updating kingdoms...');
       updateKingdoms();
     };
 
+    const proposalsObserver = () => {
+      console.log('Proposals changed, updating proposals...');
+      updateProposals();
+    };
+
     const eventsObserver = () => {
-      console.log('Events changed, updating events...'); // Debug log
+      console.log('Events changed, updating events...');
       updateEvents();
     };
 
     sharedProjects.observe(projectsObserver);
+    sharedProposals.observe(proposalsObserver);
     sharedEvents.observe(eventsObserver);
 
     // Cleanup observers on unmount
     return () => {
       sharedProjects.unobserve(projectsObserver);
+      sharedProposals.unobserve(proposalsObserver);
       sharedEvents.unobserve(eventsObserver);
     };
   }, []);
@@ -138,10 +184,13 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
   return (
     <KingdomContext.Provider value={{
       kingdoms,
+      proposals,
       recentEvents,
       favoriteKingdoms,
       getKingdom,
+      getProposal,
       updateKingdoms,
+      updateProposals,
       updateEvents
     }}>
       {children}

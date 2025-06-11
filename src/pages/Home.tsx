@@ -100,7 +100,7 @@ function Home() {
     </motion.div>
   );
 
-  console.log('Home component - kingdoms:', kingdoms, 'favoriteKingdoms:', favoriteKingdoms); // Debug log
+  console.log('Home component - kingdoms:', kingdoms, 'favoriteKingdoms:', favoriteKingdoms);
 
   return (
     <div className="relative min-h-screen overflow-hidden">

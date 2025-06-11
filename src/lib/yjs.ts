@@ -43,7 +43,65 @@ export const addEvent = (event: Omit<RecentEvent, 'id' | 'timestamp'>) => {
     timestamp: Date.now()
   }
   
+  console.log('Adding event:', newEvent)
   sharedEvents.push([newEvent])
+}
+
+// Add kingdom to shared projects
+export const addKingdom = (kingdom: any) => {
+  console.log('Adding kingdom to shared projects:', kingdom)
+  sharedProjects.push([kingdom])
+  
+  // Also add an event for the kingdom creation
+  addEvent({
+    type: EVENT_TYPES.KINGDOM_CREATED,
+    title: `New Kingdom: ${kingdom.name}`,
+    description: `${kingdom.name} has been forged with ${kingdom.features?.map(f => f.name).join(', ') || 'custom features'}`,
+    relatedId: kingdom.id,
+    creator: kingdom.creator,
+    metadata: {
+      features: kingdom.features || [],
+      colors: { 
+        primaryColor: kingdom.primaryColor, 
+        secondaryColor: kingdom.secondaryColor, 
+        accentColor: kingdom.accentColor 
+      }
+    }
+  })
+}
+
+// Add proposal to shared proposals
+export const addProposal = (proposal: any) => {
+  console.log('Adding proposal to shared proposals:', proposal)
+  sharedProposals.push([proposal])
+  
+  // Also add an event for the proposal creation
+  addEvent({
+    type: EVENT_TYPES.PROPOSAL_CREATED,
+    title: `New Proposal: ${proposal.title}`,
+    description: `${proposal.creator.slice(0, 8)}... created a new proposal`,
+    relatedId: proposal.id,
+    creator: proposal.creator,
+    metadata: {
+      proposalTitle: proposal.title,
+      expiresAt: proposal.expiresAt
+    }
+  })
+}
+
+// Get all kingdoms
+export const getAllKingdoms = () => {
+  return sharedProjects.toArray()
+}
+
+// Get all proposals
+export const getAllProposals = () => {
+  return sharedProposals.toArray()
+}
+
+// Get all events
+export const getAllEvents = () => {
+  return sharedEvents.toArray()
 }
 
 // Calculate project level based on progress and features

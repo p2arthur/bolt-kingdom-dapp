@@ -35,6 +35,13 @@ const getEventColors = (type: string, index: number) => {
     };
   }
   
+  if (type === EVENT_TYPES.PROPOSAL_CREATED) {
+    return {
+      background: 'rgba(245, 161, 5, 0.3)',
+      border: 'rgba(146, 64, 14, 0.5)'
+    };
+  }
+  
   return {
     background: 'rgba(245, 161, 5, 0.3)',
     border: 'rgba(146, 64, 14, 0.5)'
@@ -55,15 +62,19 @@ const formatTimeAgo = (timestamp: number) => {
 };
 
 export default function RecentEventCard({ event, index }: RecentEventCardProps) {
-  const { getKingdom } = useKingdom();
+  const { getKingdom, getProposal } = useKingdom();
   const Icon = getEventIcon(event.type);
   const colors = getEventColors(event.type, index);
   const isKingdomEvent = event.type === EVENT_TYPES.KINGDOM_CREATED;
+  const isProposalEvent = event.type === EVENT_TYPES.PROPOSAL_CREATED;
   const isNewKingdom = isKingdomEvent && index === 0;
 
-  // Check if the kingdom still exists for kingdom events
+  // Check if the related item still exists for events with links
   const kingdom = isKingdomEvent && event.relatedId ? getKingdom(event.relatedId) : null;
+  const proposal = isProposalEvent && event.relatedId ? getProposal(event.relatedId) : null;
+  
   const isValidKingdomLink = isKingdomEvent && kingdom;
+  const isValidProposalLink = isProposalEvent && proposal;
 
   const cardContent = (
     <motion.div
@@ -71,7 +82,7 @@ export default function RecentEventCard({ event, index }: RecentEventCardProps) 
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ delay: index * 0.1 }}
-      className={`flex items-center gap-3 py-1 px-3 rounded-lg ${isValidKingdomLink ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+      className={`flex items-center gap-3 py-1 px-3 rounded-lg ${(isValidKingdomLink || isValidProposalLink) ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
       style={{
         background: colors.background,
         border: `3px solid ${colors.border}`,
@@ -94,6 +105,12 @@ export default function RecentEventCard({ event, index }: RecentEventCardProps) 
               <span className="text-xs font-bold text-white">KINGDOM</span>
             </div>
           )}
+          {isProposalEvent && (
+            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-white/10 rounded-full backdrop-blur-sm">
+              <Scroll className="w-3 h-3 text-white" />
+              <span className="text-xs font-bold text-white">PROPOSAL</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2 text-xs text-white/80">
           <Shield className="w-3 h-3" />
@@ -114,6 +131,9 @@ export default function RecentEventCard({ event, index }: RecentEventCardProps) 
     );
   }
 
-  // For other events or invalid kingdom links, just display the card
+  // For proposal events, we could link to a proposal page if we had one
+  // For now, just display the card without a link
+  
+  // For other events or invalid links, just display the card
   return cardContent;
 }
