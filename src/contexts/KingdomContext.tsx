@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { sharedProjects } from '../lib/yjs';
+import { sharedProjects, sharedEvents, RecentEvent, EVENT_TYPES } from '../lib/yjs';
 
 interface Kingdom {
   id: string;
@@ -21,61 +21,47 @@ interface Kingdom {
 
 interface KingdomContextType {
   kingdoms: Kingdom[];
-  recentKingdoms: Kingdom[];
+  recentEvents: RecentEvent[];
   favoriteKingdoms: Kingdom[];
   getKingdom: (id: string) => Kingdom | undefined;
   updateKingdoms: () => void;
+  updateEvents: () => void;
 }
 
 const KingdomContext = createContext<KingdomContextType | undefined>(undefined);
 
 // Local storage keys
-const RECENT_KINGDOMS_KEY = 'kingdom_recent_list';
-const RECENT_KINGDOMS_MAX = 5; // Maximum number of recent kingdoms to keep
+const RECENT_EVENTS_KEY = 'kingdom_recent_events';
+const RECENT_EVENTS_MAX = 8; // Maximum number of recent events to keep
 
 export function KingdomProvider({ children }: { children: React.ReactNode }) {
   const [kingdoms, setKingdoms] = useState<Kingdom[]>([]);
-  const [recentKingdoms, setRecentKingdoms] = useState<Kingdom[]>([]);
+  const [recentEvents, setRecentEvents] = useState<RecentEvent[]>([]);
   const [favoriteKingdoms, setFavoriteKingdoms] = useState<Kingdom[]>([]);
 
-  // Load recent kingdoms from localStorage
-  const loadRecentKingdoms = () => {
+  // Load recent events from localStorage
+  const loadRecentEvents = () => {
     try {
-      const stored = localStorage.getItem(RECENT_KINGDOMS_KEY);
+      const stored = localStorage.getItem(RECENT_EVENTS_KEY);
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
-      console.error('Error loading recent kingdoms:', error);
+      console.error('Error loading recent events:', error);
       return [];
     }
   };
 
-  // Save recent kingdoms to localStorage
-  const saveRecentKingdoms = (kingdoms: Kingdom[]) => {
+  // Save recent events to localStorage
+  const saveRecentEvents = (events: RecentEvent[]) => {
     try {
-      localStorage.setItem(RECENT_KINGDOMS_KEY, JSON.stringify(kingdoms));
+      localStorage.setItem(RECENT_EVENTS_KEY, JSON.stringify(events));
     } catch (error) {
-      console.error('Error saving recent kingdoms:', error);
+      console.error('Error saving recent events:', error);
     }
-  };
-
-  // Add a kingdom to recent list
-  const addToRecentKingdoms = (kingdom: Kingdom) => {
-    const currentRecent = loadRecentKingdoms();
-    
-    // Remove if already exists to avoid duplicates
-    const filtered = currentRecent.filter((k: Kingdom) => k.id !== kingdom.id);
-    
-    // Add to beginning of array
-    const newRecent = [kingdom, ...filtered].slice(0, RECENT_KINGDOMS_MAX);
-    
-    saveRecentKingdoms(newRecent);
-    setRecentKingdoms(newRecent);
   };
 
   const updateKingdoms = () => {
     const allKingdoms = sharedProjects.toArray();
     const favorites = JSON.parse(localStorage.getItem('kingdom_favorites') || '[]');
-    const storedRecent = loadRecentKingdoms();
     
     // Update kingdoms list
     const reversedKingdoms = [...allKingdoms].reverse();
@@ -83,21 +69,25 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     
     // Update favorites
     setFavoriteKingdoms(allKingdoms.filter(kingdom => favorites.includes(kingdom.id)));
+  };
+
+  const updateEvents = () => {
+    const allEvents = sharedEvents.toArray();
+    const storedEvents = loadRecentEvents();
     
-    // Check for new kingdoms and add them to recent
-    if (allKingdoms.length > 0) {
-      const latestKingdom = reversedKingdoms[0];
-      const isAlreadyInRecent = storedRecent.some((k: Kingdom) => k.id === latestKingdom.id);
-      
-      if (!isAlreadyInRecent) {
-        addToRecentKingdoms(latestKingdom);
-      } else {
-        // Just update the recent kingdoms state with stored data
-        setRecentKingdoms(storedRecent);
-      }
-    } else {
-      setRecentKingdoms(storedRecent);
-    }
+    // Combine shared events with stored events, remove duplicates, and sort by timestamp
+    const combinedEvents = [...allEvents, ...storedEvents];
+    const uniqueEvents = combinedEvents.filter((event, index, self) => 
+      index === self.findIndex(e => e.id === event.id)
+    );
+    
+    // Sort by timestamp (newest first) and limit
+    const sortedEvents = uniqueEvents
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, RECENT_EVENTS_MAX);
+    
+    setRecentEvents(sortedEvents);
+    saveRecentEvents(sortedEvents);
   };
 
   const getKingdom = (id: string) => {
@@ -108,35 +98,44 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Load initial data
     updateKingdoms();
+    updateEvents();
     
-    // Set up observer for shared projects
-    const unsubscribe = sharedProjects.observe(() => {
+    // Set up observers
+    const unsubscribeProjects = sharedProjects.observe(() => {
       updateKingdoms();
     });
 
-    // Cleanup observer on unmount
+    const unsubscribeEvents = sharedEvents.observe(() => {
+      updateEvents();
+    });
+
+    // Cleanup observers on unmount
     return () => {
-      if (typeof unsubscribe === 'function') {
-        unsubscribe();
+      if (typeof unsubscribeProjects === 'function') {
+        unsubscribeProjects();
+      }
+      if (typeof unsubscribeEvents === 'function') {
+        unsubscribeEvents();
       }
     };
   }, []);
 
-  // Also load recent kingdoms on mount to ensure they're available immediately
+  // Load recent events on mount to ensure they're available immediately
   useEffect(() => {
-    const storedRecent = loadRecentKingdoms();
-    if (storedRecent.length > 0) {
-      setRecentKingdoms(storedRecent);
+    const storedEvents = loadRecentEvents();
+    if (storedEvents.length > 0) {
+      setRecentEvents(storedEvents);
     }
   }, []);
 
   return (
     <KingdomContext.Provider value={{
       kingdoms,
-      recentKingdoms,
+      recentEvents,
       favoriteKingdoms,
       getKingdom,
-      updateKingdoms
+      updateKingdoms,
+      updateEvents
     }}>
       {children}
     </KingdomContext.Provider>

@@ -13,7 +13,7 @@ import Docs from './pages/Docs';
 import Background from './components/Background';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import RecentKingdomsList from './components/RecentKingdomsList';
+import RecentEventsList from './components/RecentEventsList';
 import { KingdomProvider, useKingdom } from './contexts/KingdomContext';
 
 // Configure wallet manager
@@ -27,13 +27,13 @@ const walletManager = new WalletManager({
 });
 
 function AppContent() {
-  const { recentKingdoms } = useKingdom();
+  const { recentEvents } = useKingdom();
   
   return (
     <Router>
       <Background />
       <Navbar />
-      <RecentKingdomsList recentProjects={recentKingdoms} />
+      <RecentEventsList recentEvents={recentEvents} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/project/:id" element={<ProjectDetails />} />

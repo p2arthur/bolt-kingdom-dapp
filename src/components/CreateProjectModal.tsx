@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Wand2, Settings, ChevronRight, Sparkles, Crown, Scroll, Sword, Hammer } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import { toast } from 'sonner';
-import { sharedProjects } from '../lib/yjs';
+import { sharedProjects, addEvent, EVENT_TYPES } from '../lib/yjs';
 import clsx from 'clsx';
 
 const microdapps = [
@@ -67,6 +67,9 @@ export default function CreateProjectModal() {
         fundingProgress: 0,
         fundingGoal: '$500K',
         imageUrl,
+        primaryColor,
+        secondaryColor,
+        accentColor,
         features: selectedDapps.map(dapp => ({
           name: dapp.charAt(0).toUpperCase() + dapp.slice(1),
           description: microdapps.find(d => d.id === dapp)?.description || ''
@@ -75,6 +78,19 @@ export default function CreateProjectModal() {
 
       await new Promise(resolve => setTimeout(resolve, 1500));
       sharedProjects.push([newProject]);
+      
+      // Add event for kingdom creation
+      addEvent({
+        type: EVENT_TYPES.KINGDOM_CREATED,
+        title: `New Kingdom: ${name}`,
+        description: `${name} has been forged with ${selectedDapps.join(', ')} features`,
+        relatedId: newProject.id,
+        creator: '0xUser',
+        metadata: {
+          features: selectedDapps,
+          colors: { primaryColor, secondaryColor, accentColor }
+        }
+      });
       
       toast.success('Project forged successfully! 🗡️');
       handleClose();
@@ -104,6 +120,9 @@ export default function CreateProjectModal() {
         marketCap: "$0",
         fundingProgress: 0,
         fundingGoal: "$500K",
+        primaryColor: "#F59E0B",
+        secondaryColor: "#B45309",
+        accentColor: "#D97706",
         features: [
           { name: "Feature 1", description: "Oracle Generated Feature" },
           { name: "Feature 2", description: "Oracle Generated Feature" }
@@ -125,6 +144,19 @@ export default function CreateProjectModal() {
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
       sharedProjects.push([generatedProject]);
+      
+      // Add event for AI-generated kingdom creation
+      addEvent({
+        type: EVENT_TYPES.KINGDOM_CREATED,
+        title: `Oracle's Vision Manifested`,
+        description: `The Oracle has manifested a new kingdom: ${generatedProject.name}`,
+        relatedId: generatedProject.id,
+        creator: "0xOracle",
+        metadata: {
+          aiGenerated: true,
+          prompt: prompt
+        }
+      });
       
       toast.success('Project manifested successfully! ✨');
       handleClose();

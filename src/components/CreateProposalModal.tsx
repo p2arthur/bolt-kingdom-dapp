@@ -3,6 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Timer, Crown } from 'lucide-react';
 import { useWallet } from '@txnlab/use-wallet-react';
+import { addEvent, EVENT_TYPES } from '../lib/yjs';
 
 interface CreateProposalModalProps {
   onProposalCreated: (proposal: any) => void;
@@ -36,6 +37,20 @@ export default function CreateProposalModal({ onProposalCreated }: CreateProposa
     };
 
     onProposalCreated(newProposal);
+    
+    // Add event for proposal creation
+    addEvent({
+      type: EVENT_TYPES.PROPOSAL_CREATED,
+      title: `New Proposal: ${title}`,
+      description: `${activeAccount.address.slice(0, 8)}... created a new proposal`,
+      relatedId: newProposal.id,
+      creator: activeAccount.address,
+      metadata: {
+        proposalTitle: title,
+        expiresAt: expiresAt.toISOString()
+      }
+    });
+    
     setIsOpen(false);
     resetForm();
   };
