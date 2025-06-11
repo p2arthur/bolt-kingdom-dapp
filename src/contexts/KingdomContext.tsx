@@ -85,13 +85,17 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateKingdoms = () => {
-    const allKingdoms = getAllKingdoms();
+    // Get kingdoms directly from YJS array
+    const allKingdoms = sharedProjects.toArray();
     const favorites = JSON.parse(localStorage.getItem('kingdom_favorites') || '[]');
     
-    console.log('Updating kingdoms from shared projects:', allKingdoms);
+    console.log('🏰 KingdomContext - Raw YJS kingdoms:', allKingdoms);
+    console.log('🏰 KingdomContext - YJS array length:', sharedProjects.length);
+    console.log('🏰 KingdomContext - YJS array contents:', sharedProjects.toJSON());
     
     // Update kingdoms list (newest first)
     const reversedKingdoms = [...allKingdoms].reverse();
+    console.log('🏰 KingdomContext - Setting kingdoms state:', reversedKingdoms);
     setKingdoms(reversedKingdoms);
     
     // Update favorites
@@ -100,7 +104,7 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
 
   const updateProposals = () => {
     const allProposals = getAllProposals();
-    console.log('Updating proposals from shared proposals:', allProposals);
+    console.log('📜 KingdomContext - Updating proposals:', allProposals);
     
     // Update proposals list (newest first)
     const reversedProposals = [...allProposals].reverse();
@@ -111,7 +115,8 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     const allEvents = getAllEvents();
     const storedEvents = loadRecentEvents();
     
-    console.log('Updating events - shared:', allEvents, 'stored:', storedEvents);
+    console.log('⚡ KingdomContext - Shared events:', allEvents);
+    console.log('⚡ KingdomContext - Stored events:', storedEvents);
     
     // Combine shared events with stored events, remove duplicates, and sort by timestamp
     const combinedEvents = [...allEvents, ...storedEvents];
@@ -124,12 +129,15 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, RECENT_EVENTS_MAX);
     
+    console.log('⚡ KingdomContext - Final events:', sortedEvents);
     setRecentEvents(sortedEvents);
     saveRecentEvents(sortedEvents);
   };
 
   const getKingdom = (id: string) => {
-    return kingdoms.find(kingdom => kingdom.id === id);
+    const kingdom = kingdoms.find(kingdom => kingdom.id === id);
+    console.log(`🔍 KingdomContext - Looking for kingdom ${id}:`, kingdom);
+    return kingdom;
   };
 
   const getProposal = (id: string) => {
@@ -138,26 +146,27 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize on mount
   useEffect(() => {
-    console.log('KingdomProvider initializing...');
+    console.log('🚀 KingdomProvider initializing...');
     
-    // Load initial data
+    // Load initial data immediately
     updateKingdoms();
     updateProposals();
     updateEvents();
     
     // Set up observers for real-time updates
-    const projectsObserver = () => {
-      console.log('Projects changed, updating kingdoms...');
+    const projectsObserver = (event) => {
+      console.log('🔄 Projects YJS observer triggered:', event);
+      console.log('🔄 Current YJS projects array:', sharedProjects.toArray());
       updateKingdoms();
     };
 
-    const proposalsObserver = () => {
-      console.log('Proposals changed, updating proposals...');
+    const proposalsObserver = (event) => {
+      console.log('🔄 Proposals YJS observer triggered:', event);
       updateProposals();
     };
 
-    const eventsObserver = () => {
-      console.log('Events changed, updating events...');
+    const eventsObserver = (event) => {
+      console.log('🔄 Events YJS observer triggered:', event);
       updateEvents();
     };
 
@@ -180,6 +189,11 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
       setRecentEvents(storedEvents);
     }
   }, []);
+
+  // Debug effect to track kingdoms state changes
+  useEffect(() => {
+    console.log('🏰 KingdomContext - Kingdoms state updated:', kingdoms);
+  }, [kingdoms]);
 
   return (
     <KingdomContext.Provider value={{

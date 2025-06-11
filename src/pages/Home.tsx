@@ -4,6 +4,7 @@ import { Rocket, Vote, Coins, Github, Crown, ExternalLink, TrendingUp, Timer, Za
 import { Link } from 'react-router-dom';
 import { useKingdom } from '../contexts/KingdomContext';
 import { getFavorites } from '../lib/favorites';
+import { sharedProjects } from '../lib/yjs';
 import CreateProjectModal from '../components/CreateProjectModal';
 import ProjectCard from '../components/ProjectCard';
 
@@ -100,7 +101,13 @@ function Home() {
     </motion.div>
   );
 
-  console.log('Home component - kingdoms:', kingdoms, 'favoriteKingdoms:', favoriteKingdoms);
+  // Debug logging
+  console.log('🏠 Home component render:');
+  console.log('🏠 - kingdoms from context:', kingdoms);
+  console.log('🏠 - kingdoms length:', kingdoms.length);
+  console.log('🏠 - favoriteKingdoms:', favoriteKingdoms);
+  console.log('🏠 - Raw YJS array:', sharedProjects.toArray());
+  console.log('🏠 - YJS array length:', sharedProjects.length);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -212,6 +219,14 @@ function Home() {
                 <Crown className="w-8 h-8" />
                 Active Kingdoms ({kingdoms.length})
               </h2>
+              
+              {/* Debug Info */}
+              <div className="mb-4 p-4 bg-black/20 rounded-lg text-white text-sm">
+                <div>🔍 Debug Info:</div>
+                <div>- Context kingdoms: {kingdoms.length}</div>
+                <div>- YJS array length: {sharedProjects.length}</div>
+                <div>- YJS contents: {JSON.stringify(sharedProjects.toArray().map(k => k.name))}</div>
+              </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {kingdoms.length > 0 ? (

@@ -43,14 +43,21 @@ export const addEvent = (event: Omit<RecentEvent, 'id' | 'timestamp'>) => {
     timestamp: Date.now()
   }
   
-  console.log('Adding event:', newEvent)
+  console.log('📝 Adding event to YJS:', newEvent)
   sharedEvents.push([newEvent])
+  console.log('📝 Events array after push:', sharedEvents.toArray())
 }
 
 // Add kingdom to shared projects
 export const addKingdom = (kingdom: any) => {
-  console.log('Adding kingdom to shared projects:', kingdom)
+  console.log('🏰 Adding kingdom to YJS shared projects:', kingdom)
+  console.log('🏰 YJS projects array before push:', sharedProjects.toArray())
+  console.log('🏰 YJS projects array length before push:', sharedProjects.length)
+  
   sharedProjects.push([kingdom])
+  
+  console.log('🏰 YJS projects array after push:', sharedProjects.toArray())
+  console.log('🏰 YJS projects array length after push:', sharedProjects.length)
   
   // Also add an event for the kingdom creation
   addEvent({
@@ -72,7 +79,7 @@ export const addKingdom = (kingdom: any) => {
 
 // Add proposal to shared proposals
 export const addProposal = (proposal: any) => {
-  console.log('Adding proposal to shared proposals:', proposal)
+  console.log('📜 Adding proposal to YJS shared proposals:', proposal)
   sharedProposals.push([proposal])
   
   // Also add an event for the proposal creation
@@ -91,7 +98,9 @@ export const addProposal = (proposal: any) => {
 
 // Get all kingdoms
 export const getAllKingdoms = () => {
-  return sharedProjects.toArray()
+  const kingdoms = sharedProjects.toArray()
+  console.log('🔍 getAllKingdoms called, returning:', kingdoms)
+  return kingdoms
 }
 
 // Get all proposals
@@ -121,16 +130,19 @@ export const calculateReputation = (project) => {
 };
 
 // Subscribe to changes
-sharedProjects.observe(() => {
-  console.log('Projects updated:', sharedProjects.toArray())
+sharedProjects.observe((event) => {
+  console.log('🔄 YJS Projects observer triggered:', event)
+  console.log('🔄 Current projects array:', sharedProjects.toArray())
 })
 
-sharedProposals.observe(() => {
-  console.log('Proposals updated:', sharedProposals.toArray())
+sharedProposals.observe((event) => {
+  console.log('🔄 YJS Proposals observer triggered:', event)
+  console.log('🔄 Current proposals array:', sharedProposals.toArray())
 })
 
-sharedEvents.observe(() => {
-  console.log('Events updated:', sharedEvents.toArray())
+sharedEvents.observe((event) => {
+  console.log('🔄 YJS Events observer triggered:', event)
+  console.log('🔄 Current events array:', sharedEvents.toArray())
 })
 
 export { ydoc, provider, sharedProjects, sharedProposals, sharedEvents }
