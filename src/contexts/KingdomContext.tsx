@@ -8,8 +8,10 @@ import {
   getAllEvents, 
   RecentEvent, 
   EVENT_TYPES,
-  initializeFromStorage
+  initializeFromStorage,
+  addEvent
 } from '../lib/yjs';
+import { fetchAlgorandKingdoms } from '../lib/algorand';
 
 interface Kingdom {
   id: string;
@@ -27,6 +29,7 @@ interface Kingdom {
     name: string;
     description: string;
   }>;
+  isAlgorand?: boolean;
 }
 
 interface Proposal {
@@ -46,12 +49,15 @@ interface KingdomContextType {
   proposals: Proposal[];
   recentEvents: RecentEvent[];
   favoriteKingdoms: Kingdom[];
+  algorandKingdoms: Kingdom[];
+  isLoadingAlgorand: boolean;
   getKingdom: (id: string) => Kingdom | undefined;
   getProposal: (id: string) => Proposal | undefined;
   updateKingdoms: () => void;
   updateProposals: () => void;
   updateEvents: () => void;
   refreshData: () => void;
+  refreshAlgorandData: () => Promise<void>;
 }
 
 const KingdomContext = createContext<KingdomContextType | undefined>(undefined);
@@ -61,6 +67,8 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [recentEvents, setRecentEvents] = useState<RecentEvent[]>([]);
   const [favoriteKingdoms, setFavoriteKingdoms] = useState<Kingdom[]>([]);
+  const [algorandKingdoms, setAlgorandKingdoms] = useState<Kingdom[]>([]);
+  const [isLoadingAlgorand, setIsLoadingAlgorand] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   const updateKingdoms = () => {
@@ -71,13 +79,16 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     console.log('🏰 KingdomContext - Raw YJS kingdoms:', allKingdoms);
     console.log('🏰 KingdomContext - YJS array length:', sharedProjects.length);
     
+    // Combine local kingdoms with Algorand kingdoms
+    const combinedKingdoms = [...allKingdoms, ...algorandKingdoms];
+    
     // Update kingdoms list (newest first)
-    const reversedKingdoms = [...allKingdoms].reverse();
-    console.log('🏰 KingdomContext - Setting kingdoms state:', reversedKingdoms);
+    const reversedKingdoms = [...combinedKingdoms].reverse();
+    console.log('🏰 KingdomContext - Setting combined kingdoms state:', reversedKingdoms);
     setKingdoms(reversedKingdoms);
     
     // Update favorites
-    setFavoriteKingdoms(allKingdoms.filter(kingdom => favorites.includes(kingdom.id)));
+    setFavoriteKingdoms(combinedKingdoms.filter(kingdom => favorites.includes(kingdom.id)));
   };
 
   const updateProposals = () => {
@@ -100,6 +111,43 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     
     console.log('⚡ KingdomContext - Final events:', sortedEvents);
     setRecentEvents(sortedEvents);
+  };
+
+  const refreshAlgorandData = async () => {
+    setIsLoadingAlgorand(true);
+    try {
+      console.log('🌐 KingdomContext - Refreshing Algorand data...');
+      const algorandData = await fetchAlgorandKingdoms();
+      
+      if (algorandData.length > 0) {
+        console.log('🏰 KingdomContext - Setting Algorand kingdoms:', algorandData);
+        setAlgorandKingdoms(algorandData);
+        
+        // Add events for new Algorand kingdoms
+        algorandData.forEach(kingdom => {
+          addEvent({
+            type: EVENT_TYPES.KINGDOM_CREATED,
+            title: `Algorand Kingdom: ${kingdom.name}`,
+            description: `${kingdom.name} discovered on Algorand testnet`,
+            relatedId: kingdom.id,
+            creator: kingdom.creator,
+            metadata: {
+              features: kingdom.features || [],
+              colors: { 
+                primaryColor: kingdom.primaryColor, 
+                secondaryColor: kingdom.secondaryColor, 
+                accentColor: kingdom.accentColor 
+              },
+              isAlgorand: true
+            }
+          });
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error refreshing Algorand data:', error);
+    } finally {
+      setIsLoadingAlgorand(false);
+    }
   };
 
   const refreshData = () => {
@@ -138,6 +186,9 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     updateProposals();
     updateEvents();
     
+    // Load Algorand data
+    refreshAlgorandData();
+    
     // Set up observers for real-time updates
     const projectsObserver = (event) => {
       console.log('🔄 Projects YJS observer triggered in context:', event);
@@ -175,6 +226,14 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     };
   }, [isInitialized]);
 
+  // Update kingdoms when Algorand data changes
+  useEffect(() => {
+    if (algorandKingdoms.length > 0) {
+      console.log('🌐 KingdomContext - Algorand kingdoms updated, refreshing combined list');
+      updateKingdoms();
+    }
+  }, [algorandKingdoms]);
+
   // Debug effect to track kingdoms state changes
   useEffect(() => {
     console.log('🏰 KingdomContext - Kingdoms state updated:', kingdoms);
@@ -186,12 +245,15 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
       proposals,
       recentEvents,
       favoriteKingdoms,
+      algorandKingdoms,
+      isLoadingAlgorand,
       getKingdom,
       getProposal,
       updateKingdoms,
       updateProposals,
       updateEvents,
-      refreshData
+      refreshData,
+      refreshAlgorandData
     }}>
       {children}
     </KingdomContext.Provider>
