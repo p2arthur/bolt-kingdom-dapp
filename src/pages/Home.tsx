@@ -9,9 +9,10 @@ import CreateProjectModal from '../components/CreateProjectModal';
 import ProjectCard from '../components/ProjectCard';
 
 function Home() {
-  const { kingdoms, favoriteKingdoms } = useKingdom();
+  const { kingdoms, favoriteKingdoms, resetData } = useKingdom();
   const [scrollY, setScrollY] = useState(0);
   const [currentSection, setCurrentSection] = useState(0);
+  const [hasReset, setHasReset] = useState(false);
   
   const heroRef = useRef(null);
   const activeKingdomsRef = useRef(null);
@@ -22,6 +23,22 @@ function Home() {
     { ref: activeKingdomsRef, label: 'Active Kingdoms' },
     ...(favoriteKingdoms.length > 0 ? [{ ref: favoritesRef, label: 'Favorites' }] : [])
   ];
+
+  // Reset data when visiting home page
+  useEffect(() => {
+    if (!hasReset) {
+      console.log('🏠 Home - Resetting data on page visit...');
+      resetData();
+      setHasReset(true);
+    }
+  }, [resetData, hasReset]);
+
+  // Reset hasReset when component unmounts (user navigates away)
+  useEffect(() => {
+    return () => {
+      setHasReset(false);
+    };
+  }, []);
 
   const coinPositions = [
     // Hero section coins
@@ -108,6 +125,7 @@ function Home() {
   console.log('🏠 - favoriteKingdoms:', favoriteKingdoms);
   console.log('🏠 - Raw YJS array:', sharedProjects.toArray());
   console.log('🏠 - YJS array length:', sharedProjects.length);
+  console.log('🏠 - hasReset:', hasReset);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -226,6 +244,8 @@ function Home() {
                 <div>- Context kingdoms: {kingdoms.length}</div>
                 <div>- YJS array length: {sharedProjects.length}</div>
                 <div>- YJS contents: {JSON.stringify(sharedProjects.toArray().map(k => k.name))}</div>
+                <div>- Has reset: {hasReset ? 'Yes' : 'No'}</div>
+                <div>- Kingdom names: {kingdoms.map(k => k.name).join(', ')}</div>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

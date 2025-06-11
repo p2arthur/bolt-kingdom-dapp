@@ -7,7 +7,11 @@ import {
   getAllProposals, 
   getAllEvents, 
   RecentEvent, 
-  EVENT_TYPES 
+  EVENT_TYPES,
+  resetAllData,
+  loadKingdomsFromStorage,
+  loadProposalsFromStorage,
+  loadEventsFromStorage
 } from '../lib/yjs';
 
 interface Kingdom {
@@ -50,48 +54,25 @@ interface KingdomContextType {
   updateKingdoms: () => void;
   updateProposals: () => void;
   updateEvents: () => void;
+  resetData: () => void;
 }
 
 const KingdomContext = createContext<KingdomContextType | undefined>(undefined);
-
-// Local storage keys
-const RECENT_EVENTS_KEY = 'kingdom_recent_events';
-const RECENT_EVENTS_MAX = 8; // Maximum number of recent events to keep
 
 export function KingdomProvider({ children }: { children: React.ReactNode }) {
   const [kingdoms, setKingdoms] = useState<Kingdom[]>([]);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [recentEvents, setRecentEvents] = useState<RecentEvent[]>([]);
   const [favoriteKingdoms, setFavoriteKingdoms] = useState<Kingdom[]>([]);
-
-  // Load recent events from localStorage
-  const loadRecentEvents = () => {
-    try {
-      const stored = localStorage.getItem(RECENT_EVENTS_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error('Error loading recent events:', error);
-      return [];
-    }
-  };
-
-  // Save recent events to localStorage
-  const saveRecentEvents = (events: RecentEvent[]) => {
-    try {
-      localStorage.setItem(RECENT_EVENTS_KEY, JSON.stringify(events));
-    } catch (error) {
-      console.error('Error saving recent events:', error);
-    }
-  };
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const updateKingdoms = () => {
-    // Get kingdoms directly from YJS array
+    // Get kingdoms from YJS array (which is synced with localStorage)
     const allKingdoms = sharedProjects.toArray();
     const favorites = JSON.parse(localStorage.getItem('kingdom_favorites') || '[]');
     
     console.log('🏰 KingdomContext - Raw YJS kingdoms:', allKingdoms);
     console.log('🏰 KingdomContext - YJS array length:', sharedProjects.length);
-    console.log('🏰 KingdomContext - YJS array contents:', sharedProjects.toJSON());
     
     // Update kingdoms list (newest first)
     const reversedKingdoms = [...allKingdoms].reverse();
@@ -113,25 +94,25 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
 
   const updateEvents = () => {
     const allEvents = getAllEvents();
-    const storedEvents = loadRecentEvents();
+    console.log('⚡ KingdomContext - Updating events:', allEvents);
     
-    console.log('⚡ KingdomContext - Shared events:', allEvents);
-    console.log('⚡ KingdomContext - Stored events:', storedEvents);
-    
-    // Combine shared events with stored events, remove duplicates, and sort by timestamp
-    const combinedEvents = [...allEvents, ...storedEvents];
-    const uniqueEvents = combinedEvents.filter((event, index, self) => 
-      index === self.findIndex(e => e.id === event.id)
-    );
-    
-    // Sort by timestamp (newest first) and limit
-    const sortedEvents = uniqueEvents
+    // Sort by timestamp (newest first) and limit to 8
+    const sortedEvents = allEvents
       .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, RECENT_EVENTS_MAX);
+      .slice(0, 8);
     
     console.log('⚡ KingdomContext - Final events:', sortedEvents);
     setRecentEvents(sortedEvents);
-    saveRecentEvents(sortedEvents);
+  };
+
+  const resetData = () => {
+    console.log('🔄 KingdomContext - Resetting all data...');
+    resetAllData();
+    
+    // Force update all states
+    updateKingdoms();
+    updateProposals();
+    updateEvents();
   };
 
   const getKingdom = (id: string) => {
@@ -146,17 +127,16 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize on mount
   useEffect(() => {
+    if (isInitialized) return;
+    
     console.log('🚀 KingdomProvider initializing...');
     
-    // Load initial data immediately
-    updateKingdoms();
-    updateProposals();
-    updateEvents();
+    // Reset and load data from localStorage
+    resetData();
     
     // Set up observers for real-time updates
     const projectsObserver = (event) => {
       console.log('🔄 Projects YJS observer triggered:', event);
-      console.log('🔄 Current YJS projects array:', sharedProjects.toArray());
       updateKingdoms();
     };
 
@@ -174,21 +154,15 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     sharedProposals.observe(proposalsObserver);
     sharedEvents.observe(eventsObserver);
 
+    setIsInitialized(true);
+
     // Cleanup observers on unmount
     return () => {
       sharedProjects.unobserve(projectsObserver);
       sharedProposals.unobserve(proposalsObserver);
       sharedEvents.unobserve(eventsObserver);
     };
-  }, []);
-
-  // Load recent events on mount to ensure they're available immediately
-  useEffect(() => {
-    const storedEvents = loadRecentEvents();
-    if (storedEvents.length > 0) {
-      setRecentEvents(storedEvents);
-    }
-  }, []);
+  }, [isInitialized]);
 
   // Debug effect to track kingdoms state changes
   useEffect(() => {
@@ -205,7 +179,8 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
       getProposal,
       updateKingdoms,
       updateProposals,
-      updateEvents
+      updateEvents,
+      resetData
     }}>
       {children}
     </KingdomContext.Provider>
