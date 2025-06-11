@@ -5,6 +5,7 @@ import { X, Wand2, Settings, ChevronRight, Sparkles, Crown, Scroll, Sword, Hamme
 import { HexColorPicker } from 'react-colorful';
 import { toast } from 'sonner';
 import { addKingdom } from '../lib/yjs';
+import { useKingdom } from '../contexts/KingdomContext';
 import clsx from 'clsx';
 
 const microdapps = [
@@ -18,6 +19,7 @@ export default function CreateProjectModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<'choose' | 'manual' | 'ai'>('choose');
   const [isLoading, setIsLoading] = useState(false);
+  const { refreshData } = useKingdom();
   
   // Manual creation state
   const [name, setName] = useState('');
@@ -76,14 +78,22 @@ export default function CreateProjectModal() {
         }))
       };
 
+      console.log('🏰 CreateProjectModal - Creating new kingdom:', newProject);
+
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Use the new addKingdom function
+      // Use the addKingdom function which handles YJS and localStorage
       addKingdom(newProject);
+      
+      // Force refresh the context to ensure immediate update
+      setTimeout(() => {
+        refreshData();
+      }, 200);
       
       toast.success('Project forged successfully! 🗡️');
       handleClose();
     } catch (error) {
+      console.error('Error creating kingdom:', error);
       toast.error('Failed to forge project');
     } finally {
       setIsLoading(false);
@@ -133,12 +143,20 @@ export default function CreateProjectModal() {
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Use the new addKingdom function
+      console.log('🏰 CreateProjectModal - Creating AI kingdom:', generatedProject);
+      
+      // Use the addKingdom function which handles YJS and localStorage
       addKingdom(generatedProject);
+      
+      // Force refresh the context to ensure immediate update
+      setTimeout(() => {
+        refreshData();
+      }, 200);
       
       toast.success('Project manifested successfully! ✨');
       handleClose();
     } catch (error) {
+      console.error('Error creating AI kingdom:', error);
       toast.error('Failed to manifest project');
     } finally {
       setIsLoading(false);

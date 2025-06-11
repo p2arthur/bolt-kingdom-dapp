@@ -44,7 +44,7 @@ export interface RecentEvent {
 export const saveKingdomsToStorage = (kingdoms: any[]) => {
   try {
     localStorage.setItem(KINGDOMS_STORAGE_KEY, JSON.stringify(kingdoms))
-    console.log('💾 Saved kingdoms to localStorage:', kingdoms.length)
+    console.log('💾 Saved kingdoms to localStorage:', kingdoms.length, kingdoms)
   } catch (error) {
     console.error('Error saving kingdoms to localStorage:', error)
   }
@@ -54,7 +54,7 @@ export const loadKingdomsFromStorage = (): any[] => {
   try {
     const stored = localStorage.getItem(KINGDOMS_STORAGE_KEY)
     const kingdoms = stored ? JSON.parse(stored) : []
-    console.log('📂 Loaded kingdoms from localStorage:', kingdoms.length)
+    console.log('📂 Loaded kingdoms from localStorage:', kingdoms.length, kingdoms)
     return kingdoms
   } catch (error) {
     console.error('Error loading kingdoms from localStorage:', error)
@@ -104,34 +104,39 @@ export const loadEventsFromStorage = (): RecentEvent[] => {
   }
 }
 
-// Initialize YJS arrays with localStorage data
+// Clear and reinitialize YJS arrays with localStorage data
 export const initializeFromStorage = () => {
   console.log('🚀 Initializing YJS arrays from localStorage...')
   
-  // Only initialize if arrays are empty
-  if (sharedProjects.length === 0) {
-    const storedKingdoms = loadKingdomsFromStorage()
-    if (storedKingdoms.length > 0) {
-      sharedProjects.push(storedKingdoms)
-      console.log('🏰 Initialized kingdoms in YJS:', storedKingdoms.length)
-    }
+  // Clear existing arrays first
+  sharedProjects.delete(0, sharedProjects.length)
+  sharedProposals.delete(0, sharedProposals.length)
+  sharedEvents.delete(0, sharedEvents.length)
+  
+  // Load from localStorage and populate YJS arrays
+  const storedKingdoms = loadKingdomsFromStorage()
+  const storedProposals = loadProposalsFromStorage()
+  const storedEvents = loadEventsFromStorage()
+  
+  if (storedKingdoms.length > 0) {
+    sharedProjects.insert(0, storedKingdoms)
+    console.log('🏰 Initialized kingdoms in YJS:', storedKingdoms.length)
   }
   
-  if (sharedProposals.length === 0) {
-    const storedProposals = loadProposalsFromStorage()
-    if (storedProposals.length > 0) {
-      sharedProposals.push(storedProposals)
-      console.log('📜 Initialized proposals in YJS:', storedProposals.length)
-    }
+  if (storedProposals.length > 0) {
+    sharedProposals.insert(0, storedProposals)
+    console.log('📜 Initialized proposals in YJS:', storedProposals.length)
   }
   
-  if (sharedEvents.length === 0) {
-    const storedEvents = loadEventsFromStorage()
-    if (storedEvents.length > 0) {
-      sharedEvents.push(storedEvents)
-      console.log('⚡ Initialized events in YJS:', storedEvents.length)
-    }
+  if (storedEvents.length > 0) {
+    sharedEvents.insert(0, storedEvents)
+    console.log('⚡ Initialized events in YJS:', storedEvents.length)
   }
+  
+  console.log('✅ YJS initialization complete')
+  console.log('🏰 Final kingdoms array:', sharedProjects.toArray())
+  console.log('📜 Final proposals array:', sharedProposals.toArray())
+  console.log('⚡ Final events array:', sharedEvents.toArray())
 }
 
 // Add event to shared events
@@ -145,7 +150,7 @@ export const addEvent = (event: Omit<RecentEvent, 'id' | 'timestamp'>) => {
   console.log('📝 Adding event to YJS:', newEvent)
   sharedEvents.push([newEvent])
   
-  // Also save to localStorage
+  // Also save to localStorage immediately
   const allEvents = sharedEvents.toArray()
   saveEventsToStorage(allEvents)
   
@@ -158,14 +163,16 @@ export const addKingdom = (kingdom: any) => {
   console.log('🏰 YJS projects array before push:', sharedProjects.toArray())
   console.log('🏰 YJS projects array length before push:', sharedProjects.length)
   
+  // Add to YJS array
   sharedProjects.push([kingdom])
   
-  // Save to localStorage
+  // Immediately save to localStorage
   const allKingdoms = sharedProjects.toArray()
   saveKingdomsToStorage(allKingdoms)
   
   console.log('🏰 YJS projects array after push:', sharedProjects.toArray())
   console.log('🏰 YJS projects array length after push:', sharedProjects.length)
+  console.log('🏰 Saved to localStorage:', allKingdoms)
   
   // Also add an event for the kingdom creation
   addEvent({
@@ -183,6 +190,8 @@ export const addKingdom = (kingdom: any) => {
       }
     }
   })
+  
+  console.log('🏰 Kingdom creation complete with event')
 }
 
 // Add proposal to shared proposals
@@ -190,7 +199,7 @@ export const addProposal = (proposal: any) => {
   console.log('📜 Adding proposal to YJS shared proposals:', proposal)
   sharedProposals.push([proposal])
   
-  // Save to localStorage
+  // Save to localStorage immediately
   const allProposals = sharedProposals.toArray()
   saveProposalsToStorage(allProposals)
   

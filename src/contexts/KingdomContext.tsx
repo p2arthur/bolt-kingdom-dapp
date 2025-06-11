@@ -140,18 +140,25 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     
     // Set up observers for real-time updates
     const projectsObserver = (event) => {
-      console.log('🔄 Projects YJS observer triggered:', event);
-      updateKingdoms();
+      console.log('🔄 Projects YJS observer triggered in context:', event);
+      // Small delay to ensure YJS has processed the change
+      setTimeout(() => {
+        updateKingdoms();
+      }, 100);
     };
 
     const proposalsObserver = (event) => {
-      console.log('🔄 Proposals YJS observer triggered:', event);
-      updateProposals();
+      console.log('🔄 Proposals YJS observer triggered in context:', event);
+      setTimeout(() => {
+        updateProposals();
+      }, 100);
     };
 
     const eventsObserver = (event) => {
-      console.log('🔄 Events YJS observer triggered:', event);
-      updateEvents();
+      console.log('🔄 Events YJS observer triggered in context:', event);
+      setTimeout(() => {
+        updateEvents();
+      }, 100);
     };
 
     sharedProjects.observe(projectsObserver);
