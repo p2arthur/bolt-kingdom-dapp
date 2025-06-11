@@ -27,10 +27,6 @@ interface AlgorandKingdom {
   isAlgorand?: boolean;
 }
 
-/**
- * Fetches kingdom IDs from Algorand testnet and decodes them
- * @returns Promise containing array of decoded kingdom IDs
- */
 export async function fetchActiveKingdomIds(): Promise<KingdomIdsResponse> {
   try {
     const response = await fetch(
@@ -46,27 +42,37 @@ export async function fetchActiveKingdomIds(): Promise<KingdomIdsResponse> {
       throw new Error('No value field in response');
     }
 
-    const binary = atob(data.value);
-    const buffer = new ArrayBuffer(binary.length);
-    const bytes = new Uint8Array(buffer);
+    const decoded = Uint8Array.from(atob(data.value), c => c.charCodeAt(0));
+    console.log("📦 Raw decoded bytes:", [...decoded]);
 
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-
-    const view = new DataView(buffer);
     const activeKingdomIds: number[] = [];
 
-    let offset = 1; // Skip the type tag or count byte
-    while (offset + 8 <= buffer.byteLength) {
-      const big = (BigInt(view.getUint32(offset, false)) << 32n) + BigInt(view.getUint32(offset + 4, false));
-      activeKingdomIds.push(Number(big)); // If you're sure it's < 2^53
-      offset += 8;
+    // First byte = count (skip it)
+    const count = decoded[1]; // actual count = 1
+    const start = 2;
+
+    for (let i = 0; i < count; i++) {
+      const offset = start + i * 8;
+      if (offset + 8 > decoded.length) {
+        console.warn("⚠️ Incomplete 8-byte value at offset", offset);
+        break;
+      }
+
+      const id =
+        (BigInt(decoded[offset]) << 56n) |
+        (BigInt(decoded[offset + 1]) << 48n) |
+        (BigInt(decoded[offset + 2]) << 40n) |
+        (BigInt(decoded[offset + 3]) << 32n) |
+        (BigInt(decoded[offset + 4]) << 24n) |
+        (BigInt(decoded[offset + 5]) << 16n) |
+        (BigInt(decoded[offset + 6]) << 8n) |
+        BigInt(decoded[offset + 7]);
+
+      activeKingdomIds.push(Number(id));
     }
 
     console.log('✅ Correctly decoded kingdom IDs:', activeKingdomIds);
     return { activeKingdomIds };
-
   } catch (error) {
     console.error('❌ Error decoding kingdom IDs:', error);
     throw error;
