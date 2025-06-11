@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Rocket, Vote, Coins, Github, Crown, ExternalLink, TrendingUp, Timer, Zap, Sword, Shield, Star, Heart, ChevronDown } from 'lucide-react';
+import { Rocket, Vote, Coins, Github, Crown, ExternalLink, TrendingUp, Timer, Zap, Sword, Shield, Star, Heart, ChevronDown, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useKingdom } from '../contexts/KingdomContext';
 import { getFavorites } from '../lib/favorites';
 import { sharedProjects } from '../lib/yjs';
+import { fetchAlgorandKingdoms } from '../lib/algorand';
 import CreateProjectModal from '../components/CreateProjectModal';
 import ProjectCard from '../components/ProjectCard';
 
 function Home() {
   const { kingdoms, favoriteKingdoms, refreshData } = useKingdom();
+  const [algorandKingdoms, setAlgorandKingdoms] = useState([]);
+  const [isLoadingAlgorand, setIsLoadingAlgorand] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [currentSection, setCurrentSection] = useState(0);
   const [hasRefreshed, setHasRefreshed] = useState(false);
@@ -29,6 +32,7 @@ function Home() {
     if (!hasRefreshed) {
       console.log('🏠 Home - Refreshing data on page visit...');
       refreshData();
+      refreshAlgorandData();
       setHasRefreshed(true);
     }
   }, [refreshData, hasRefreshed]);
@@ -39,6 +43,20 @@ function Home() {
       setHasRefreshed(false);
     };
   }, []);
+
+  const refreshAlgorandData = async () => {
+    setIsLoadingAlgorand(true);
+    try {
+      console.log('🌐 Home - Fetching Algorand kingdoms...');
+      const algorandData = await fetchAlgorandKingdoms();
+      console.log('🏰 Home - Received Algorand kingdoms:', algorandData);
+      setAlgorandKingdoms(algorandData);
+    } catch (error) {
+      console.error('❌ Error fetching Algorand kingdoms:', error);
+    } finally {
+      setIsLoadingAlgorand(false);
+    }
+  };
 
   const coinPositions = [
     // Hero section coins
@@ -120,8 +138,10 @@ function Home() {
 
   // Debug logging
   console.log('🏠 Home component render:');
-  console.log('🏠 - kingdoms from context:', kingdoms);
-  console.log('🏠 - kingdoms length:', kingdoms.length);
+  console.log('🏠 - YJS kingdoms from context:', kingdoms);
+  console.log('🏠 - YJS kingdoms length:', kingdoms.length);
+  console.log('🏠 - Algorand kingdoms:', algorandKingdoms);
+  console.log('🏠 - Algorand kingdoms length:', algorandKingdoms.length);
   console.log('🏠 - favoriteKingdoms:', favoriteKingdoms);
   console.log('🏠 - Raw YJS array:', sharedProjects.toArray());
   console.log('🏠 - YJS array length:', sharedProjects.length);
@@ -233,37 +253,90 @@ function Home() {
           <div className="relative z-20 max-w-4xl mx-auto px-4 py-20">
             {/* Active Kingdoms Section */}
             <section ref={activeKingdomsRef} className="mb-20 min-h-screen flex flex-col justify-center">
-              <h2 className="text-3xl font-bold mb-8 flex items-center gap-3 text-white">
-                <Crown className="w-8 h-8" />
-                Active Kingdoms ({kingdoms.length})
-              </h2>
-              
-              {/* Debug Info */}
-              <div className="mb-4 p-4 bg-black/20 rounded-lg text-white text-sm">
-                <div>🔍 Debug Info:</div>
-                <div>- Context kingdoms: {kingdoms.length}</div>
-                <div>- YJS array length: {sharedProjects.length}</div>
-                <div>- YJS contents: {JSON.stringify(sharedProjects.toArray().map(k => k.name))}</div>
-                <div>- Has refreshed: {hasRefreshed ? 'Yes' : 'No'}</div>
-                <div>- Kingdom names: {kingdoms.map(k => k.name).join(', ')}</div>
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-3xl font-bold flex items-center gap-3 text-white">
+                  <Crown className="w-8 h-8" />
+                  Active Kingdoms ({kingdoms.length + algorandKingdoms.length})
+                </h2>
+                
+                <button
+                  onClick={refreshAlgorandData}
+                  disabled={isLoadingAlgorand}
+                  className="medieval-button !bg-white/10 !border-white/30 !text-white hover:!bg-white/20 flex items-center gap-2"
+                >
+                  {isLoadingAlgorand ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    >
+                      <RefreshCw className="w-5 h-5" />
+                    </motion.div>
+                  ) : (
+                    <RefreshCw className="w-5 h-5" />
+                  )}
+                  <span>Refresh Algorand</span>
+                </button>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {kingdoms.length > 0 ? (
-                  kingdoms.map((project, index) => (
-                    <ProjectCard 
-                      key={project.id} 
-                      project={project} 
-                      isNew={index === 0} 
+              {/* Algorand Kingdoms Section */}
+              {algorandKingdoms.length > 0 && (
+                <div className="mb-12">
+                  <h3 className="text-xl font-bold mb-6 flex items-center gap-3 text-white">
+                    <img 
+                      src="https://algorand.com/static/algorand-logo-white-6e6e611912fccb44f0f9d2aeaac193e8.svg" 
+                      alt="Algorand" 
+                      className="h-6"
                     />
-                  ))
-                ) : (
-                  <>
-                    <EmptyKingdomCard />
-                    <EmptyKingdomCard />
-                    <EmptyKingdomCard />
-                  </>
-                )}
+                    Algorand Kingdoms ({algorandKingdoms.length})
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    {algorandKingdoms.map((project, index) => (
+                      <ProjectCard 
+                        key={project.id} 
+                        project={project} 
+                        isNew={index === 0} 
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Local Kingdoms Section */}
+              <div>
+                <h3 className="text-xl font-bold mb-6 flex items-center gap-3 text-white">
+                  <Sword className="w-6 h-6" />
+                  Local Kingdoms ({kingdoms.length})
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {kingdoms.length > 0 ? (
+                    kingdoms.map((project, index) => (
+                      <ProjectCard 
+                        key={project.id} 
+                        project={project} 
+                        isNew={index === 0} 
+                      />
+                    ))
+                  ) : (
+                    <>
+                      <EmptyKingdomCard />
+                      <EmptyKingdomCard />
+                      <EmptyKingdomCard />
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Debug Info */}
+              <div className="mt-8 p-4 bg-black/20 rounded-lg text-white text-sm">
+                <div>🔍 Debug Info:</div>
+                <div>- YJS kingdoms: {kingdoms.length}</div>
+                <div>- Algorand kingdoms: {algorandKingdoms.length}</div>
+                <div>- Total kingdoms: {kingdoms.length + algorandKingdoms.length}</div>
+                <div>- YJS array length: {sharedProjects.length}</div>
+                <div>- Loading Algorand: {isLoadingAlgorand ? 'Yes' : 'No'}</div>
+                <div>- Has refreshed: {hasRefreshed ? 'Yes' : 'No'}</div>
+                <div>- YJS kingdom names: {kingdoms.map(k => k.name).join(', ')}</div>
+                <div>- Algorand kingdom names: {algorandKingdoms.map(k => k.name).join(', ')}</div>
               </div>
             </section>
 
