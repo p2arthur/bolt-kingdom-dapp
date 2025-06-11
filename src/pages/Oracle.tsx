@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, Scroll } from 'lucide-react';
 import { sharedProjects } from '../lib/yjs';
+import AlgorandKingdomsTest from '../components/AlgorandKingdomsTest';
 
 type Message = {
   id: string;
@@ -14,6 +15,7 @@ export default function Oracle() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showAlgorandTest, setShowAlgorandTest] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const projects = sharedProjects.toArray();
 
@@ -51,6 +53,12 @@ export default function Oracle() {
         } else {
           response = "The realm awaits its first kingdom. Perhaps you shall be the one to forge it?";
         }
+      }
+
+      // Check if asking about Algorand
+      if (input.toLowerCase().includes('algorand') || input.toLowerCase().includes('blockchain')) {
+        response = "Ah, you seek knowledge of the Algorand blockchain! I can divine the active kingdom IDs from the testnet. Would you like me to reveal this mystical data?";
+        setShowAlgorandTest(true);
       }
 
       const oracleMessage: Message = {
@@ -133,7 +141,18 @@ export default function Oracle() {
         </motion.div>
       ))}
       
-      <div className="relative z-20 max-w-4xl mx-auto px-4 py-8">
+      <div className="relative z-20 max-w-4xl mx-auto px-4 py-8 space-y-8">
+        {/* Algorand Test Component */}
+        {showAlgorandTest && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <AlgorandKingdomsTest />
+          </motion.div>
+        )}
+
+        {/* Oracle Chat */}
         <div className="medieval-card min-h-[600px] flex flex-col bg-amber-950/90 backdrop-blur-md border-amber-600">
           {/* Header */}
           <div className="flex items-center gap-4 p-4 border-b border-amber-600/50">
@@ -197,7 +216,7 @@ export default function Oracle() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask the Oracle about the realm..."
+                placeholder="Ask the Oracle about the realm or Algorand..."
                 className="flex-1 bg-amber-900/50 border-2 border-amber-600 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-400/50 focus:outline-none focus:border-amber-500"
                 disabled={isLoading}
               />
