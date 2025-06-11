@@ -64,7 +64,7 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   const updateKingdoms = () => {
-    // Get kingdoms from YJS array (which is synced with localStorage)
+    // Get kingdoms from YJS array (which is synced with localStorage and WebRTC)
     const allKingdoms = sharedProjects.toArray();
     const favorites = JSON.parse(localStorage.getItem('kingdom_favorites') || '[]');
     
@@ -93,10 +93,10 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     const allEvents = getAllEvents();
     console.log('⚡ KingdomContext - Updating events:', allEvents);
     
-    // Sort by timestamp (newest first) and limit to 8
+    // Sort by timestamp (newest first) and limit to 10 for better performance
     const sortedEvents = allEvents
       .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, 8);
+      .slice(0, 10);
     
     console.log('⚡ KingdomContext - Final events:', sortedEvents);
     setRecentEvents(sortedEvents);
@@ -128,7 +128,7 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isInitialized) return;
     
-    console.log('🚀 KingdomProvider initializing...');
+    console.log('🚀 KingdomProvider initializing with RTC...');
     
     // Initialize from localStorage
     initializeFromStorage();
@@ -138,9 +138,10 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     updateProposals();
     updateEvents();
     
-    // Set up observers for real-time updates
+    // Set up observers for real-time updates (including WebRTC sync)
     const projectsObserver = (event) => {
-      console.log('🔄 Projects YJS observer triggered in context:', event);
+      console.log('🔄 Projects YJS observer triggered in context (RTC):', event);
+      console.log('🔄 Event origin:', event.origin);
       // Small delay to ensure YJS has processed the change
       setTimeout(() => {
         updateKingdoms();
@@ -148,14 +149,16 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     };
 
     const proposalsObserver = (event) => {
-      console.log('🔄 Proposals YJS observer triggered in context:', event);
+      console.log('🔄 Proposals YJS observer triggered in context (RTC):', event);
+      console.log('🔄 Event origin:', event.origin);
       setTimeout(() => {
         updateProposals();
       }, 100);
     };
 
     const eventsObserver = (event) => {
-      console.log('🔄 Events YJS observer triggered in context:', event);
+      console.log('🔄 Events YJS observer triggered in context (RTC):', event);
+      console.log('🔄 Event origin:', event.origin);
       setTimeout(() => {
         updateEvents();
       }, 100);
@@ -179,6 +182,11 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log('🏰 KingdomContext - Kingdoms state updated:', kingdoms);
   }, [kingdoms]);
+
+  // Debug effect to track events state changes
+  useEffect(() => {
+    console.log('⚡ KingdomContext - Events state updated:', recentEvents);
+  }, [recentEvents]);
 
   return (
     <KingdomContext.Provider value={{

@@ -305,7 +305,7 @@ function Home() {
               <div>
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-3 text-white">
                   <Sword className="w-6 h-6" />
-                  Local Kingdoms ({kingdoms.length})
+                  Local Kingdoms ({kingdoms.length}) - WebRTC Synced
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {kingdoms.length > 0 ? (
@@ -326,9 +326,9 @@ function Home() {
                 </div>
               </div>
 
-              {/* Debug Info */}
+              {/* Enhanced Debug Info */}
               <div className="mt-8 p-4 bg-black/20 rounded-lg text-white text-sm">
-                <div>🔍 Debug Info:</div>
+                <div>🔍 Debug Info (WebRTC Enabled):</div>
                 <div>- YJS kingdoms: {kingdoms.length}</div>
                 <div>- Algorand kingdoms: {algorandKingdoms.length}</div>
                 <div>- Total kingdoms: {kingdoms.length + algorandKingdoms.length}</div>
@@ -337,6 +337,7 @@ function Home() {
                 <div>- Has refreshed: {hasRefreshed ? 'Yes' : 'No'}</div>
                 <div>- YJS kingdom names: {kingdoms.map(k => k.name).join(', ')}</div>
                 <div>- Algorand kingdom names: {algorandKingdoms.map(k => k.name).join(', ')}</div>
+                <div>- WebRTC Room: kingdomdapp-events-v2</div>
               </div>
             </section>
 

@@ -18,7 +18,12 @@ export default function RecentEventsList({ recentEvents }: RecentEventsListProps
           </div>
           <div>
             <span className="text-sm font-bold text-amber-950">Recent Events</span>
-            <p className="text-xs text-amber-950/70">Latest happenings in the realm</p>
+            <p className="text-xs text-amber-950/70">
+              {recentEvents && recentEvents.length > 0 
+                ? `${recentEvents.length} recent activities` 
+                : 'No recent activity - create something!'
+              }
+            </p>
           </div>
         </div>
         
@@ -34,7 +39,7 @@ export default function RecentEventsList({ recentEvents }: RecentEventsListProps
                   />
                 ))
               ) : (
-                <div className="flex items-center gap-3 py-1 px-3 rounded-lg bg-white/10 border-2 border-white/20">
+                <div className="flex items-center gap-3 py-1 px-3 rounded-lg bg-white/10 border-2 border-white/20 backdrop-blur-sm">
                   <div className="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
                     <Zap className="w-4 h-4 text-white/50" />
                   </div>

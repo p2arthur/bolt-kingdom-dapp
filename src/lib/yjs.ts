@@ -4,9 +4,9 @@ import { WebrtcProvider } from 'y-webrtc'
 // Create a shared document
 const ydoc = new Y.Doc()
 
-// Connect to peers with WebRTC
-const provider = new WebrtcProvider('launcherai-projects', ydoc, {
-  signaling: ['wss://signaling.yjs.dev']
+// Connect to peers with WebRTC - using a more specific room name
+const provider = new WebrtcProvider('kingdomdapp-events-v2', ydoc, {
+  signaling: ['wss://signaling.yjs.dev', 'wss://y-webrtc-signaling-eu.herokuapp.com', 'wss://y-webrtc-signaling-us.herokuapp.com']
 })
 
 // Create shared arrays
@@ -108,27 +108,23 @@ export const loadEventsFromStorage = (): RecentEvent[] => {
 export const initializeFromStorage = () => {
   console.log('🚀 Initializing YJS arrays from localStorage...')
   
-  // Clear existing arrays first
-  sharedProjects.delete(0, sharedProjects.length)
-  sharedProposals.delete(0, sharedProposals.length)
-  sharedEvents.delete(0, sharedEvents.length)
-  
-  // Load from localStorage and populate YJS arrays
+  // Load from localStorage and populate YJS arrays if they're empty
   const storedKingdoms = loadKingdomsFromStorage()
   const storedProposals = loadProposalsFromStorage()
   const storedEvents = loadEventsFromStorage()
   
-  if (storedKingdoms.length > 0) {
+  // Only initialize if YJS arrays are empty (to avoid conflicts with RTC sync)
+  if (sharedProjects.length === 0 && storedKingdoms.length > 0) {
     sharedProjects.insert(0, storedKingdoms)
     console.log('🏰 Initialized kingdoms in YJS:', storedKingdoms.length)
   }
   
-  if (storedProposals.length > 0) {
+  if (sharedProposals.length === 0 && storedProposals.length > 0) {
     sharedProposals.insert(0, storedProposals)
     console.log('📜 Initialized proposals in YJS:', storedProposals.length)
   }
   
-  if (storedEvents.length > 0) {
+  if (sharedEvents.length === 0 && storedEvents.length > 0) {
     sharedEvents.insert(0, storedEvents)
     console.log('⚡ Initialized events in YJS:', storedEvents.length)
   }
@@ -139,80 +135,98 @@ export const initializeFromStorage = () => {
   console.log('⚡ Final events array:', sharedEvents.toArray())
 }
 
-// Add event to shared events
+// Add event to shared events with RTC sync
 export const addEvent = (event: Omit<RecentEvent, 'id' | 'timestamp'>) => {
   const newEvent: RecentEvent = {
     ...event,
-    id: Date.now().toString(),
+    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // More unique ID
     timestamp: Date.now()
   }
   
-  console.log('📝 Adding event to YJS:', newEvent)
+  console.log('📝 Adding event to YJS with RTC sync:', newEvent)
+  
+  // Add to YJS array (this will sync via WebRTC)
   sharedEvents.push([newEvent])
   
-  // Also save to localStorage immediately
+  // Also save to localStorage for persistence
   const allEvents = sharedEvents.toArray()
   saveEventsToStorage(allEvents)
   
   console.log('📝 Events array after push:', sharedEvents.toArray())
+  console.log('🌐 Event will sync to other clients via WebRTC')
 }
 
-// Add kingdom to shared projects
+// Add kingdom to shared projects with RTC sync
 export const addKingdom = (kingdom: any) => {
-  console.log('🏰 Adding kingdom to YJS shared projects:', kingdom)
+  // Ensure unique ID
+  const kingdomWithId = {
+    ...kingdom,
+    id: kingdom.id || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  }
+  
+  console.log('🏰 Adding kingdom to YJS with RTC sync:', kingdomWithId)
   console.log('🏰 YJS projects array before push:', sharedProjects.toArray())
   console.log('🏰 YJS projects array length before push:', sharedProjects.length)
   
-  // Add to YJS array
-  sharedProjects.push([kingdom])
+  // Add to YJS array (this will sync via WebRTC)
+  sharedProjects.push([kingdomWithId])
   
-  // Immediately save to localStorage
+  // Immediately save to localStorage for persistence
   const allKingdoms = sharedProjects.toArray()
   saveKingdomsToStorage(allKingdoms)
   
   console.log('🏰 YJS projects array after push:', sharedProjects.toArray())
   console.log('🏰 YJS projects array length after push:', sharedProjects.length)
   console.log('🏰 Saved to localStorage:', allKingdoms)
+  console.log('🌐 Kingdom will sync to other clients via WebRTC')
   
   // Also add an event for the kingdom creation
   addEvent({
     type: EVENT_TYPES.KINGDOM_CREATED,
-    title: `New Kingdom: ${kingdom.name}`,
-    description: `${kingdom.name} has been forged with ${kingdom.features?.map(f => f.name).join(', ') || 'custom features'}`,
-    relatedId: kingdom.id,
-    creator: kingdom.creator,
+    title: `New Kingdom: ${kingdomWithId.name}`,
+    description: `${kingdomWithId.name} has been forged with ${kingdomWithId.features?.map(f => f.name).join(', ') || 'custom features'}`,
+    relatedId: kingdomWithId.id,
+    creator: kingdomWithId.creator,
     metadata: {
-      features: kingdom.features || [],
+      features: kingdomWithId.features || [],
       colors: { 
-        primaryColor: kingdom.primaryColor, 
-        secondaryColor: kingdom.secondaryColor, 
-        accentColor: kingdom.accentColor 
+        primaryColor: kingdomWithId.primaryColor, 
+        secondaryColor: kingdomWithId.secondaryColor, 
+        accentColor: kingdomWithId.accentColor 
       }
     }
   })
   
-  console.log('🏰 Kingdom creation complete with event')
+  console.log('🏰 Kingdom creation complete with event and RTC sync')
 }
 
-// Add proposal to shared proposals
+// Add proposal to shared proposals with RTC sync
 export const addProposal = (proposal: any) => {
-  console.log('📜 Adding proposal to YJS shared proposals:', proposal)
-  sharedProposals.push([proposal])
+  // Ensure unique ID
+  const proposalWithId = {
+    ...proposal,
+    id: proposal.id || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  }
   
-  // Save to localStorage immediately
+  console.log('📜 Adding proposal to YJS with RTC sync:', proposalWithId)
+  sharedProposals.push([proposalWithId])
+  
+  // Save to localStorage immediately for persistence
   const allProposals = sharedProposals.toArray()
   saveProposalsToStorage(allProposals)
+  
+  console.log('🌐 Proposal will sync to other clients via WebRTC')
   
   // Also add an event for the proposal creation
   addEvent({
     type: EVENT_TYPES.PROPOSAL_CREATED,
-    title: `New Proposal: ${proposal.title}`,
-    description: `${proposal.creator.slice(0, 8)}... created a new proposal`,
-    relatedId: proposal.id,
-    creator: proposal.creator,
+    title: `New Proposal: ${proposalWithId.title}`,
+    description: `${proposalWithId.creator.slice(0, 8)}... created a new proposal`,
+    relatedId: proposalWithId.id,
+    creator: proposalWithId.creator,
     metadata: {
-      proposalTitle: proposal.title,
-      expiresAt: proposal.expiresAt
+      proposalTitle: proposalWithId.title,
+      expiresAt: proposalWithId.expiresAt
     }
   })
 }
@@ -231,7 +245,9 @@ export const getAllProposals = () => {
 
 // Get all events
 export const getAllEvents = () => {
-  return sharedEvents.toArray()
+  const events = sharedEvents.toArray()
+  console.log('🔍 getAllEvents called, returning:', events.length, 'events')
+  return events
 }
 
 // Calculate project level based on progress and features
@@ -250,26 +266,38 @@ export const calculateReputation = (project) => {
   return Math.floor(progressPoints + treasuryPoints + featuresPoints);
 };
 
-// Subscribe to changes and save to localStorage
+// Enhanced observers with RTC sync logging
 sharedProjects.observe((event) => {
-  console.log('🔄 YJS Projects observer triggered:', event)
+  console.log('🔄 YJS Projects observer triggered (RTC sync):', event)
+  console.log('🔄 Event origin:', event.origin) // Will show if it's from local or remote
   const allKingdoms = sharedProjects.toArray()
   saveKingdomsToStorage(allKingdoms)
   console.log('🔄 Current projects array:', allKingdoms)
 })
 
 sharedProposals.observe((event) => {
-  console.log('🔄 YJS Proposals observer triggered:', event)
+  console.log('🔄 YJS Proposals observer triggered (RTC sync):', event)
+  console.log('🔄 Event origin:', event.origin)
   const allProposals = sharedProposals.toArray()
   saveProposalsToStorage(allProposals)
   console.log('🔄 Current proposals array:', allProposals)
 })
 
 sharedEvents.observe((event) => {
-  console.log('🔄 YJS Events observer triggered:', event)
+  console.log('🔄 YJS Events observer triggered (RTC sync):', event)
+  console.log('🔄 Event origin:', event.origin)
   const allEvents = sharedEvents.toArray()
   saveEventsToStorage(allEvents)
   console.log('🔄 Current events array:', allEvents)
+})
+
+// WebRTC provider status logging
+provider.on('status', (event) => {
+  console.log('🌐 WebRTC Provider Status:', event.status)
+})
+
+provider.on('peers', (event) => {
+  console.log('🌐 WebRTC Connected Peers:', event.added, event.removed, event.webrtcPeers)
 })
 
 // Initialize on module load
