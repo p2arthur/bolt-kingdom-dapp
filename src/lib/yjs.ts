@@ -24,8 +24,7 @@ export const EVENT_TYPES = {
   KINGDOM_CREATED: 'kingdom_created',
   PROPOSAL_CREATED: 'proposal_created',
   VOTE_CAST: 'vote_cast',
-  STAKE_MADE: 'stake_made',
-  ALGORAND_KINGDOM_DISCOVERED: 'algorand_kingdom_discovered'
+  STAKE_MADE: 'stake_made'
 } as const
 
 export type EventType = typeof EVENT_TYPES[keyof typeof EVENT_TYPES]
