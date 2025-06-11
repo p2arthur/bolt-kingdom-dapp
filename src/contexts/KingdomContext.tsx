@@ -64,7 +64,7 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   const updateKingdoms = () => {
-    // Get kingdoms from YJS array (which includes Algorand kingdoms + user-created ones)
+    // Get kingdoms from YJS array (which is synced with localStorage)
     const allKingdoms = sharedProjects.toArray();
     const favorites = JSON.parse(localStorage.getItem('kingdom_favorites') || '[]');
     
@@ -105,6 +105,9 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
   const refreshData = () => {
     console.log('🔄 KingdomContext - Refreshing all data...');
     
+    // Re-initialize from storage to ensure we have latest data
+    initializeFromStorage();
+    
     // Force update all states
     updateKingdoms();
     updateProposals();
@@ -127,19 +130,13 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     
     console.log('🚀 KingdomProvider initializing...');
     
-    // Initialize from localStorage and Algorand (async)
-    const initializeAsync = async () => {
-      await initializeFromStorage();
-      
-      // Load initial data after initialization
-      updateKingdoms();
-      updateProposals();
-      updateEvents();
-      
-      setIsInitialized(true);
-    };
+    // Initialize from localStorage
+    initializeFromStorage();
     
-    initializeAsync();
+    // Load initial data
+    updateKingdoms();
+    updateProposals();
+    updateEvents();
     
     // Set up observers for real-time updates
     const projectsObserver = (event) => {
@@ -167,6 +164,8 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     sharedProjects.observe(projectsObserver);
     sharedProposals.observe(proposalsObserver);
     sharedEvents.observe(eventsObserver);
+
+    setIsInitialized(true);
 
     // Cleanup observers on unmount
     return () => {

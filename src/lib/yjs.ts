@@ -1,6 +1,5 @@
 import * as Y from 'yjs'
 import { WebrtcProvider } from 'y-webrtc'
-import { fetchAlgorandKingdoms } from './algorand'
 
 // Create a shared document
 const ydoc = new Y.Doc()
@@ -19,7 +18,6 @@ const sharedEvents = ydoc.getArray('events')
 const KINGDOMS_STORAGE_KEY = 'kingdom_kingdoms'
 const PROPOSALS_STORAGE_KEY = 'kingdom_proposals'
 const EVENTS_STORAGE_KEY = 'kingdom_events'
-const ALGORAND_INITIALIZED_KEY = 'kingdom_algorand_initialized'
 
 // Event types
 export const EVENT_TYPES = {
@@ -106,64 +104,8 @@ export const loadEventsFromStorage = (): RecentEvent[] => {
   }
 }
 
-// Check if Algorand kingdoms have been initialized
-export const isAlgorandInitialized = (): boolean => {
-  return localStorage.getItem(ALGORAND_INITIALIZED_KEY) === 'true'
-}
-
-// Mark Algorand kingdoms as initialized
-export const markAlgorandInitialized = () => {
-  localStorage.setItem(ALGORAND_INITIALIZED_KEY, 'true')
-}
-
-// Initialize Algorand kingdoms if not already done
-export const initializeAlgorandKingdoms = async () => {
-  if (isAlgorandInitialized()) {
-    console.log('🌐 Algorand kingdoms already initialized, skipping...')
-    return
-  }
-
-  try {
-    console.log('🌐 Initializing Algorand kingdoms for the first time...')
-    const algorandKingdoms = await fetchAlgorandKingdoms()
-    
-    if (algorandKingdoms.length > 0) {
-      console.log('🏰 Adding Algorand kingdoms to YJS:', algorandKingdoms)
-      
-      // Add each kingdom to the shared array
-      algorandKingdoms.forEach(kingdom => {
-        sharedProjects.push([kingdom])
-        
-        // Add event for each kingdom
-        addEvent({
-          type: EVENT_TYPES.KINGDOM_CREATED,
-          title: `Algorand Kingdom: ${kingdom.name}`,
-          description: `${kingdom.name} discovered on Algorand testnet`,
-          relatedId: kingdom.id,
-          creator: kingdom.creator,
-          metadata: {
-            features: kingdom.features || [],
-            colors: { 
-              primaryColor: kingdom.primaryColor, 
-              secondaryColor: kingdom.secondaryColor, 
-              accentColor: kingdom.accentColor 
-            },
-            isAlgorand: true
-          }
-        })
-      })
-      
-      // Mark as initialized
-      markAlgorandInitialized()
-      console.log('✅ Algorand kingdoms initialization complete')
-    }
-  } catch (error) {
-    console.error('❌ Error initializing Algorand kingdoms:', error)
-  }
-}
-
 // Clear and reinitialize YJS arrays with localStorage data
-export const initializeFromStorage = async () => {
+export const initializeFromStorage = () => {
   console.log('🚀 Initializing YJS arrays from localStorage...')
   
   // Clear existing arrays first
@@ -171,18 +113,14 @@ export const initializeFromStorage = async () => {
   sharedProposals.delete(0, sharedProposals.length)
   sharedEvents.delete(0, sharedEvents.length)
   
-  // Initialize Algorand kingdoms first (if not already done)
-  await initializeAlgorandKingdoms()
-  
   // Load from localStorage and populate YJS arrays
   const storedKingdoms = loadKingdomsFromStorage()
   const storedProposals = loadProposalsFromStorage()
   const storedEvents = loadEventsFromStorage()
   
-  // Add stored kingdoms (these will be in addition to Algorand kingdoms)
   if (storedKingdoms.length > 0) {
-    sharedProjects.insert(sharedProjects.length, storedKingdoms)
-    console.log('🏰 Added stored kingdoms to YJS:', storedKingdoms.length)
+    sharedProjects.insert(0, storedKingdoms)
+    console.log('🏰 Initialized kingdoms in YJS:', storedKingdoms.length)
   }
   
   if (storedProposals.length > 0) {
@@ -333,5 +271,8 @@ sharedEvents.observe((event) => {
   saveEventsToStorage(allEvents)
   console.log('🔄 Current events array:', allEvents)
 })
+
+// Initialize on module load
+initializeFromStorage()
 
 export { ydoc, provider, sharedProjects, sharedProposals, sharedEvents }
