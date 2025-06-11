@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Scroll, ChevronDown, Book, Sword, Plus } from 'lucide-react';
+import { Scroll, ChevronDown, Book, Sword } from 'lucide-react';
 import { WalletButton } from '@txnlab/use-wallet-ui-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import CreateProposalModal from './CreateProposalModal';
 
 export default function Navbar() {
   const [network, setNetwork] = useState<'mainnet' | 'testnet'>('mainnet');
@@ -101,16 +100,6 @@ export default function Navbar() {
                 <Book className="w-4 h-4" />
                 <span>Docs</span>
               </Link>
-
-              {/* Global Create Proposal Button */}
-              <CreateProposalModal 
-                triggerButton={
-                  <button className="flex items-center gap-2 text-amber-950 hover:text-amber-800 transition-colors font-bold text-sm bg-amber-200/50 hover:bg-amber-200/70 px-3 py-1.5 rounded-lg border-2 border-amber-950/20 hover:border-amber-950/40">
-                    <Plus className="w-4 h-4" />
-                    <span>Proposal</span>
-                  </button>
-                }
-              />
             </div>
           </div>
           

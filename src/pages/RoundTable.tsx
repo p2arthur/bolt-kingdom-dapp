@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Timer, Check, X, Shield } from 'lucide-react';
+import { Crown, Plus, Timer, Check, X, Shield } from 'lucide-react';
 import { useWallet } from '@txnlab/use-wallet-react';
-import { sharedProposals } from '../lib/yjs';
 import CreateProposalModal from '../components/CreateProposalModal';
 
 interface Proposal {
@@ -16,34 +15,12 @@ interface Proposal {
     yes: string[];
     no: string[];
   };
-  createdAt?: Date;
 }
 
 export default function RoundTable() {
   const { appId } = useParams();
   const { activeAccount } = useWallet();
   const [proposals, setProposals] = useState<Proposal[]>([]);
-
-  // Load proposals from shared YJS array
-  useEffect(() => {
-    const updateProposals = () => {
-      const allProposals = sharedProposals.toArray();
-      setProposals([...allProposals].reverse()); // Show newest first
-    };
-
-    updateProposals();
-    
-    // Subscribe to changes
-    const unsubscribe = sharedProposals.observe(() => {
-      updateProposals();
-    });
-
-    return () => {
-      if (typeof unsubscribe === 'function') {
-        unsubscribe();
-      }
-    };
-  }, []);
 
   const isExpired = (expiresAt: Date) => {
     return new Date() > new Date(expiresAt);
@@ -60,7 +37,6 @@ export default function RoundTable() {
   const handleVote = async (proposalId: string, vote: 'yes' | 'no') => {
     if (!activeAccount?.address) return;
 
-    // Update local state immediately for better UX
     setProposals(prev => prev.map(proposal => {
       if (proposal.id === proposalId) {
         return {
@@ -73,9 +49,6 @@ export default function RoundTable() {
       }
       return proposal;
     }));
-
-    // TODO: Update the shared YJS array as well
-    // This would require finding the proposal in the array and updating it
   };
 
   const ProposalCard = ({ proposal }: { proposal: Proposal }) => {
@@ -111,7 +84,7 @@ export default function RoundTable() {
             
             <div className="flex items-center gap-2 text-sm text-amber-950/70 mb-4">
               <Shield className="w-4 h-4" />
-              <span>Created by {proposal.creator.slice(0, 8)}...</span>
+              <span>Created by {proposal.creator}</span>
               <Timer className="w-4 h-4 ml-4" />
               <span>
                 {expired 
@@ -175,18 +148,9 @@ export default function RoundTable() {
             <Crown className="w-8 h-8 text-amber-950/30" />
           </div>
           <h3 className="text-xl font-bold text-amber-950/50 mb-2">No Active Proposals</h3>
-          <p className="text-amber-950/40 mb-4">
+          <p className="text-amber-950/40">
             Be the first to create a proposal for the kingdom
           </p>
-          {activeAccount && (
-            <CreateProposalModal 
-              onProposalCreated={(proposal) => {
-                // Local callback - the YJS observer will handle the real update
-                console.log('Proposal created locally:', proposal);
-              }}
-              className="!bg-amber-950 !text-amber-100 hover:!bg-amber-900"
-            />
-          )}
         </div>
       </div>
     </motion.div>
@@ -215,8 +179,10 @@ export default function RoundTable() {
           {activeAccount && (
             <CreateProposalModal
               onProposalCreated={(proposal) => {
-                // Local callback - the YJS observer will handle the real update
-                console.log('Proposal created from RoundTable:', proposal);
+                setProposals(prev => [...prev, {
+                  ...proposal,
+                  votes: { yes: [], no: [] }
+                }]);
               }}
             />
           )}
