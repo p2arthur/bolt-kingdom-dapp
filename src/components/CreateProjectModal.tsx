@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Wand2, Settings, ChevronRight, Sparkles, Crown, Scroll, Sword, Hammer } from 'lucide-react';
+import { X, Wand2, Settings, ChevronRight, Sparkles, Crown, Scroll, Sword, Hammer, Coins, Vote } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import { toast } from 'sonner';
 import { addKingdom } from '../lib/yjs';
@@ -9,10 +9,8 @@ import { useKingdom } from '../contexts/KingdomContext';
 import clsx from 'clsx';
 
 const microdapps = [
-  { id: 'governance', name: 'Governance', description: 'DAO voting system' },
-  { id: 'staking', name: 'Staking', description: 'Token staking rewards' },
-  { id: 'marketplace', name: 'Marketplace', description: 'NFT trading platform' },
-  { id: 'bridge', name: 'Bridge', description: 'Cross-chain bridge' },
+  { id: 'governance', name: 'Governance', description: 'DAO voting system', icon: Vote },
+  { id: 'staking', name: 'Staking', description: 'Token staking rewards', icon: Coins },
 ];
 
 export default function CreateProjectModal() {
@@ -23,6 +21,7 @@ export default function CreateProjectModal() {
   
   // Manual creation state
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#A855F7');
   const [secondaryColor, setSecondaryColor] = useState('#F0ABFC');
   const [accentColor, setAccentColor] = useState('#C084FC');
@@ -36,6 +35,7 @@ export default function CreateProjectModal() {
   const resetState = () => {
     setStep('choose');
     setName('');
+    setDescription('');
     setPrimaryColor('#A855F7');
     setSecondaryColor('#F0ABFC');
     setAccentColor('#C084FC');
@@ -53,7 +53,7 @@ export default function CreateProjectModal() {
 
   const handleManualCreate = async () => {
     if (!name || selectedDapps.length === 0) {
-      toast.error('Your project requires a name and chosen features');
+      toast.error('Your kingdom requires a name and chosen features');
       return;
     }
 
@@ -64,7 +64,7 @@ export default function CreateProjectModal() {
         name,
         creator: '0xUser',
         gradient: `from-[${primaryColor}] to-[${secondaryColor}]`,
-        description: `A Web3 project with ${selectedDapps.join(', ')}`,
+        description: description || `A Web3 project with ${selectedDapps.join(', ')}`,
         marketCap: '$0',
         fundingProgress: Math.floor(Math.random() * 80) + 10, // Random progress between 10-90%
         fundingGoal: '$500K',
@@ -90,11 +90,11 @@ export default function CreateProjectModal() {
         refreshData();
       }, 200);
       
-      toast.success('Project forged successfully! 🗡️');
+      toast.success('Kingdom forged successfully! 🗡️');
       handleClose();
     } catch (error) {
       console.error('Error creating kingdom:', error);
-      toast.error('Failed to forge project');
+      toast.error('Failed to forge kingdom');
     } finally {
       setIsLoading(false);
     }
@@ -153,11 +153,11 @@ export default function CreateProjectModal() {
         refreshData();
       }, 200);
       
-      toast.success('Project manifested successfully! ✨');
+      toast.success('Kingdom manifested successfully! ✨');
       handleClose();
     } catch (error) {
       console.error('Error creating AI kingdom:', error);
-      toast.error('Failed to manifest project');
+      toast.error('Failed to manifest kingdom');
     } finally {
       setIsLoading(false);
     }
@@ -177,8 +177,9 @@ export default function CreateProjectModal() {
         <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-auto z-50">
           <div className="bg-amber-800 border-4 border-amber-950 rounded-2xl shadow-2xl">
             <div className="flex items-center justify-between p-6 border-b-4 border-amber-900">
-              <Dialog.Title className="text-2xl font-bold text-amber-100">
-                The Forge
+              <Dialog.Title className="text-2xl font-bold text-amber-100 flex items-center gap-2">
+                <Crown className="w-6 h-6" />
+                <span>The Forge</span>
               </Dialog.Title>
               <Dialog.Close asChild>
                 <button className="p-2 hover:bg-amber-700/50 rounded-full transition-colors">
@@ -235,14 +236,27 @@ export default function CreateProjectModal() {
                   >
                     <div className="space-y-2">
                       <label className="block text-sm font-bold text-amber-200">
-                        Project Name
+                        Kingdom Name
                       </label>
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full bg-amber-900/50 border-4 border-amber-900 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-400/50 focus:outline-none focus:border-amber-600"
-                        placeholder="Enter project name"
+                        className="w-full bg-amber-900/50 border-2 border-amber-900 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-400/50 focus:outline-none focus:border-amber-600"
+                        placeholder="Enter kingdom name"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-amber-200">
+                        Description
+                      </label>
+                      <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="w-full bg-amber-900/50 border-2 border-amber-900 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-400/50 focus:outline-none focus:border-amber-600 h-24 resize-none"
+                        placeholder="Describe your kingdom..."
                       />
                     </div>
 
@@ -252,7 +266,7 @@ export default function CreateProjectModal() {
                           Primary Color
                         </label>
                         <div className="relative">
-                          <div className="h-10 w-full rounded-lg border-4 border-amber-900 cursor-pointer" 
+                          <div className="h-10 w-full rounded-lg border-2 border-amber-900 cursor-pointer" 
                                style={{ backgroundColor: primaryColor }}
                                onClick={() => document.getElementById('primaryPicker')?.classList.toggle('hidden')}
                           />
@@ -266,7 +280,7 @@ export default function CreateProjectModal() {
                           Secondary Color
                         </label>
                         <div className="relative">
-                          <div className="h-10 w-full rounded-lg border-4 border-amber-900 cursor-pointer" 
+                          <div className="h-10 w-full rounded-lg border-2 border-amber-900 cursor-pointer" 
                                style={{ backgroundColor: secondaryColor }}
                                onClick={() => document.getElementById('secondaryPicker')?.classList.toggle('hidden')}
                           />
@@ -280,7 +294,7 @@ export default function CreateProjectModal() {
                           Accent Color
                         </label>
                         <div className="relative">
-                          <div className="h-10 w-full rounded-lg border-4 border-amber-900 cursor-pointer" 
+                          <div className="h-10 w-full rounded-lg border-2 border-amber-900 cursor-pointer" 
                                style={{ backgroundColor: accentColor }}
                                onClick={() => document.getElementById('accentPicker')?.classList.toggle('hidden')}
                           />
@@ -295,7 +309,7 @@ export default function CreateProjectModal() {
                       <label className="block text-sm font-bold text-amber-200">
                         Select Features
                       </label>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 gap-3">
                         {microdapps.map((dapp) => {
                           const isSelected = selectedDapps.includes(dapp.id);
                           return (
@@ -309,23 +323,23 @@ export default function CreateProjectModal() {
                                 );
                               }}
                               className={clsx(
-                                "p-4 rounded-xl transition-all transform",
+                                "p-4 rounded-xl transition-all transform text-left",
                                 isSelected 
-                                  ? "bg-amber-600 border-4 border-amber-400 shadow-[0_0_20px_rgba(217,119,6,0.3)] scale-105" 
-                                  : "bg-amber-700 border-4 border-amber-900 hover:bg-amber-600/80"
+                                  ? "bg-amber-600 border-2 border-amber-400 shadow-[0_0_20px_rgba(217,119,6,0.3)] scale-105" 
+                                  : "bg-amber-700 border-2 border-amber-900 hover:bg-amber-600/80"
                               )}
                             >
                               <div className="flex items-center gap-3">
                                 <div className={clsx(
-                                  "w-8 h-8 rounded-lg flex items-center justify-center",
+                                  "w-10 h-10 rounded-lg flex items-center justify-center",
                                   isSelected ? "bg-amber-500" : "bg-amber-800"
                                 )}>
-                                  <Crown className={clsx(
-                                    "w-5 h-5",
+                                  <dapp.icon className={clsx(
+                                    "w-6 h-6",
                                     isSelected ? "text-amber-950" : "text-amber-500"
                                   )} />
                                 </div>
-                                <div className="text-left">
+                                <div className="flex-1">
                                   <h4 className={clsx(
                                     "font-bold",
                                     isSelected ? "text-amber-950" : "text-amber-100"
@@ -344,13 +358,13 @@ export default function CreateProjectModal() {
 
                     <div className="space-y-2">
                       <label className="block text-sm font-bold text-amber-200">
-                        Project Image URL
+                        Kingdom Image URL (Optional)
                       </label>
                       <input
                         type="text"
                         value={imageUrl}
                         onChange={(e) => setImageUrl(e.target.value)}
-                        className="w-full bg-amber-900/50 border-4 border-amber-900 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-400/50 focus:outline-none focus:border-amber-600"
+                        className="w-full bg-amber-900/50 border-2 border-amber-900 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-400/50 focus:outline-none focus:border-amber-600"
                         placeholder="https://example.com/image.png"
                       />
                     </div>
@@ -365,7 +379,7 @@ export default function CreateProjectModal() {
                       <button
                         onClick={handleManualCreate}
                         disabled={isLoading}
-                        className="flex-1 medieval-button"
+                        className="flex-1 medieval-button !bg-amber-950 !text-amber-100 hover:!bg-amber-900 flex items-center justify-center gap-2"
                       >
                         {isLoading ? (
                           <motion.div
@@ -375,8 +389,9 @@ export default function CreateProjectModal() {
                             <Sparkles className="w-5 h-5" />
                           </motion.div>
                         ) : (
-                          <span>Forge Project</span>
+                          <Hammer className="w-5 h-5" />
                         )}
+                        <span>{isLoading ? 'Forging...' : 'Forge Kingdom'}</span>
                       </button>
                     </div>
                   </motion.div>
@@ -398,8 +413,9 @@ export default function CreateProjectModal() {
                           <textarea
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
-                            className="w-full bg-amber-900/50 border-4 border-amber-900 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-400/50 focus:outline-none focus:border-amber-600 h-32 resize-none"
-                            placeholder="Describe your project to the Oracle..."
+                            className="w-full bg-amber-900/50 border-2 border-amber-900 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-400/50 focus:outline-none focus:border-amber-600 h-32 resize-none"
+                            placeholder="Describe your kingdom to the Oracle..."
+                            required
                           />
                         </div>
 
@@ -413,7 +429,7 @@ export default function CreateProjectModal() {
                           <button
                             onClick={handleAIGenerate}
                             disabled={isLoading}
-                            className="flex-1 medieval-button flex items-center justify-center gap-2"
+                            className="flex-1 medieval-button !bg-amber-950 !text-amber-100 hover:!bg-amber-900 flex items-center justify-center gap-2"
                           >
                             {isLoading ? (
                               <motion.div
@@ -423,23 +439,21 @@ export default function CreateProjectModal() {
                                 <Sparkles className="w-5 h-5" />
                               </motion.div>
                             ) : (
-                              <>
-                                <Scroll className="w-5 h-5" />
-                                <span>Consult Oracle</span>
-                              </>
+                              <Scroll className="w-5 h-5" />
                             )}
+                            <span>{isLoading ? 'Consulting...' : 'Consult Oracle'}</span>
                           </button>
                         </div>
                       </>
                     ) : (
                       <div className="space-y-6">
-                        <div className="bg-amber-700 border-4 border-amber-900 rounded-xl p-6 space-y-4">
+                        <div className="bg-amber-700 border-2 border-amber-900 rounded-xl p-6 space-y-4">
                           <h3 className="text-xl font-bold text-amber-100">{generatedProject.name}</h3>
                           <p className="text-amber-200/80">{generatedProject.description}</p>
                           
                           <div className="grid grid-cols-2 gap-4">
                             {generatedProject.features.map((feature, index) => (
-                              <div key={index} className="bg-amber-800 border-4 border-amber-900 rounded-xl p-4">
+                              <div key={index} className="bg-amber-800 border-2 border-amber-900 rounded-xl p-4">
                                 <h4 className="font-bold text-amber-100">{feature.name}</h4>
                                 <p className="text-sm text-amber-200/80">{feature.description}</p>
                               </div>
@@ -457,7 +471,7 @@ export default function CreateProjectModal() {
                           <button
                             onClick={handleAIDeploy}
                             disabled={isLoading}
-                            className="flex-1 medieval-button flex items-center justify-center gap-2"
+                            className="flex-1 medieval-button !bg-amber-950 !text-amber-100 hover:!bg-amber-900 flex items-center justify-center gap-2"
                           >
                             {isLoading ? (
                               <motion.div
@@ -467,8 +481,9 @@ export default function CreateProjectModal() {
                                 <Sparkles className="w-5 h-5" />
                               </motion.div>
                             ) : (
-                              <span>Manifest Project</span>
+                              <Crown className="w-5 h-5" />
                             )}
+                            <span>{isLoading ? 'Manifesting...' : 'Manifest Kingdom'}</span>
                           </button>
                         </div>
                       </div>

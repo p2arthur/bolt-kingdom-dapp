@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Sparkles, Scroll } from 'lucide-react';
+import { Send, Sparkles, Scroll, Clock, Star, Crown } from 'lucide-react';
 import { sharedProjects } from '../lib/yjs';
 import AlgorandKingdomsTest from '../components/AlgorandKingdomsTest';
 
@@ -44,21 +44,26 @@ export default function Oracle() {
 
     // Simulate Oracle's response
     setTimeout(() => {
-      let response = "I see many possibilities in the mists of time...";
+      let response = "The Oracle's wisdom is currently being channeled... This feature is coming soon to the realm! 🔮";
       
       // Check if the question is about projects
       if (input.toLowerCase().includes('project') || input.toLowerCase().includes('kingdom')) {
         if (projects.length > 0) {
-          response = `I see ${projects.length} kingdoms in our realm. The most recent one is "${projects[projects.length - 1].name}". What else would you like to know about them?`;
+          response = `I see ${projects.length} kingdoms in our realm. The most recent one is "${projects[projects.length - 1].name}". The Oracle's full divination powers are coming soon! ✨`;
         } else {
-          response = "The realm awaits its first kingdom. Perhaps you shall be the one to forge it?";
+          response = "The realm awaits its first kingdom. Perhaps you shall be the one to forge it? The Oracle's guidance will be enhanced soon! 🏰";
         }
       }
 
       // Check if asking about Algorand
       if (input.toLowerCase().includes('algorand') || input.toLowerCase().includes('blockchain')) {
-        response = "Ah, you seek knowledge of the Algorand blockchain! I can divine the active kingdom IDs from the testnet. Would you like me to reveal this mystical data?";
+        response = "Ah, you seek knowledge of the Algorand blockchain! The Oracle can currently show you active kingdom IDs, but full blockchain divination is coming soon! 🌐";
         setShowAlgorandTest(true);
+      }
+
+      // Check if asking about the future
+      if (input.toLowerCase().includes('future') || input.toLowerCase().includes('when') || input.toLowerCase().includes('coming')) {
+        response = "The Oracle sees great things ahead! Advanced divination, prophecies, and mystical insights are being prepared for the realm. The ancient wisdom will be unlocked soon! 🔮✨";
       }
 
       const oracleMessage: Message = {
@@ -142,6 +147,73 @@ export default function Oracle() {
       ))}
       
       <div className="relative z-20 max-w-4xl mx-auto px-4 py-8 space-y-8">
+        {/* Coming Soon Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="medieval-card !bg-amber-950/90 backdrop-blur-md border-amber-600"
+        >
+          <div className="text-center py-8">
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="p-4 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700"
+              >
+                <Scroll className="w-8 h-8 text-amber-950" />
+              </motion.div>
+              <div>
+                <h1 className="text-3xl font-bold text-amber-100 flex items-center gap-2">
+                  <Crown className="w-8 h-8" />
+                  The Oracle's Chamber
+                </h1>
+                <p className="text-amber-200/80">Ancient wisdom awaits...</p>
+              </div>
+              <motion.div
+                animate={{ rotate: -360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="p-4 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700"
+              >
+                <Sparkles className="w-8 h-8 text-amber-950" />
+              </motion.div>
+            </div>
+
+            <motion.div
+              animate={{ 
+                scale: [1, 1.05, 1],
+                opacity: [0.8, 1, 0.8]
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="inline-flex items-center gap-3 px-6 py-4 bg-amber-800/30 rounded-xl border-2 border-amber-600/50"
+            >
+              <Clock className="w-6 h-6 text-amber-100" />
+              <div>
+                <div className="text-xl font-bold text-amber-100">Coming Soon</div>
+                <div className="text-sm text-amber-200/80">The Oracle is preparing mystical powers</div>
+              </div>
+              <Star className="w-6 h-6 text-amber-100" />
+            </motion.div>
+
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-amber-900/30 rounded-xl p-4 border-2 border-amber-600/50">
+                <Sparkles className="w-6 h-6 text-amber-100 mb-2 mx-auto" />
+                <h3 className="font-bold text-amber-100 mb-1">Prophecies</h3>
+                <p className="text-sm text-amber-200/80">Divine the future of kingdoms</p>
+              </div>
+              <div className="bg-amber-900/30 rounded-xl p-4 border-2 border-amber-600/50">
+                <Crown className="w-6 h-6 text-amber-100 mb-2 mx-auto" />
+                <h3 className="font-bold text-amber-100 mb-1">Kingdom Insights</h3>
+                <p className="text-sm text-amber-200/80">Deep analysis of realm data</p>
+              </div>
+              <div className="bg-amber-900/30 rounded-xl p-4 border-2 border-amber-600/50">
+                <Scroll className="w-6 h-6 text-amber-100 mb-2 mx-auto" />
+                <h3 className="font-bold text-amber-100 mb-1">Ancient Wisdom</h3>
+                <p className="text-sm text-amber-200/80">Mystical guidance and advice</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Algorand Test Component */}
         {showAlgorandTest && (
           <motion.div
@@ -153,15 +225,15 @@ export default function Oracle() {
         )}
 
         {/* Oracle Chat */}
-        <div className="medieval-card min-h-[600px] flex flex-col bg-amber-950/90 backdrop-blur-md border-amber-600">
+        <div className="medieval-card min-h-[400px] flex flex-col bg-amber-950/90 backdrop-blur-md border-amber-600">
           {/* Header */}
           <div className="flex items-center gap-4 p-4 border-b border-amber-600/50">
             <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700">
               <Scroll className="w-6 h-6 text-amber-950" />
             </div>
             <div>
-              <h1 className="text-xl font-medieval text-amber-100">The Oracle's Chamber</h1>
-              <p className="text-sm text-amber-200/80">Seek wisdom about the realm</p>
+              <h2 className="text-xl font-bold text-amber-100">Consult the Oracle</h2>
+              <p className="text-sm text-amber-200/80">Limited preview - full powers coming soon</p>
             </div>
           </div>
 
@@ -216,7 +288,7 @@ export default function Oracle() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask the Oracle about the realm or Algorand..."
+                placeholder="Ask the Oracle about the realm (preview mode)..."
                 className="flex-1 bg-amber-900/50 border-2 border-amber-600 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-400/50 focus:outline-none focus:border-amber-500"
                 disabled={isLoading}
               />
