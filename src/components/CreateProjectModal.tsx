@@ -53,7 +53,7 @@ export default function CreateProjectModal() {
 
   const handleManualCreate = async () => {
     if (!name || selectedDapps.length === 0) {
-      toast.error('Your project requires a name and chosen features');
+      toast.error('Your kingdom requires a name and chosen features');
       return;
     }
 
@@ -64,10 +64,10 @@ export default function CreateProjectModal() {
         name,
         creator: '0xUser',
         gradient: `from-[${primaryColor}] to-[${secondaryColor}]`,
-        description: `A Web3 project with ${selectedDapps.join(', ')}`,
+        description: `An Algorand kingdom with ${selectedDapps.join(', ')}`,
         marketCap: '$0',
         fundingProgress: Math.floor(Math.random() * 80) + 10, // Random progress between 10-90%
-        fundingGoal: '$500K',
+        fundingGoal: '$500K ALGO',
         imageUrl,
         primaryColor,
         secondaryColor,
@@ -75,10 +75,12 @@ export default function CreateProjectModal() {
         features: selectedDapps.map(dapp => ({
           name: dapp.charAt(0).toUpperCase() + dapp.slice(1),
           description: microdapps.find(d => d.id === dapp)?.description || ''
-        }))
+        })),
+        isAlgorand: true,
+        isRTC: true // Mark as RTC-created
       };
 
-      console.log('🏰 CreateProjectModal - Creating new kingdom:', newProject);
+      console.log('🏰 CreateProjectModal - Creating new Algorand kingdom:', newProject);
 
       await new Promise(resolve => setTimeout(resolve, 1500));
       
@@ -90,11 +92,11 @@ export default function CreateProjectModal() {
         refreshData();
       }, 200);
       
-      toast.success('Project forged successfully! 🗡️');
+      toast.success('Algorand Kingdom forged successfully! ⚡');
       handleClose();
     } catch (error) {
       console.error('Error creating kingdom:', error);
-      toast.error('Failed to forge project');
+      toast.error('Failed to forge kingdom');
     } finally {
       setIsLoading(false);
     }
@@ -118,14 +120,16 @@ export default function CreateProjectModal() {
         description: prompt,
         marketCap: "$0",
         fundingProgress: Math.floor(Math.random() * 80) + 10,
-        fundingGoal: "$500K",
+        fundingGoal: "$500K ALGO",
         primaryColor: "#F59E0B",
         secondaryColor: "#B45309",
         accentColor: "#D97706",
         features: [
-          { name: "Feature 1", description: "Oracle Generated Feature" },
-          { name: "Feature 2", description: "Oracle Generated Feature" }
-        ]
+          { name: "Oracle Feature 1", description: "Oracle Generated Feature" },
+          { name: "Oracle Feature 2", description: "Oracle Generated Feature" }
+        ],
+        isAlgorand: true,
+        isRTC: true
       };
 
       setGeneratedProject(newProject);
@@ -143,7 +147,7 @@ export default function CreateProjectModal() {
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      console.log('🏰 CreateProjectModal - Creating AI kingdom:', generatedProject);
+      console.log('🏰 CreateProjectModal - Creating AI Algorand kingdom:', generatedProject);
       
       // Use the addKingdom function which handles YJS and localStorage
       addKingdom(generatedProject);
@@ -153,11 +157,11 @@ export default function CreateProjectModal() {
         refreshData();
       }, 200);
       
-      toast.success('Project manifested successfully! ✨');
+      toast.success('Algorand Kingdom manifested successfully! ✨');
       handleClose();
     } catch (error) {
       console.error('Error creating AI kingdom:', error);
-      toast.error('Failed to manifest project');
+      toast.error('Failed to manifest kingdom');
     } finally {
       setIsLoading(false);
     }
@@ -178,7 +182,7 @@ export default function CreateProjectModal() {
           <div className="bg-amber-800 border-4 border-amber-950 rounded-2xl shadow-2xl">
             <div className="flex items-center justify-between p-6 border-b-4 border-amber-900">
               <Dialog.Title className="text-2xl font-bold text-amber-100">
-                The Forge
+                The Algorand Forge
               </Dialog.Title>
               <Dialog.Close asChild>
                 <button className="p-2 hover:bg-amber-700/50 rounded-full transition-colors">
@@ -205,7 +209,7 @@ export default function CreateProjectModal() {
                       </div>
                       <div className="flex-1 text-left">
                         <h3 className="font-bold text-amber-100">Consult the Oracle</h3>
-                        <p className="text-sm text-amber-200/80">Let the Oracle guide your vision</p>
+                        <p className="text-sm text-amber-200/80">Let the Oracle guide your Algorand vision</p>
                       </div>
                       <ChevronRight className="w-5 h-5 text-amber-200/50" />
                     </button>
@@ -219,7 +223,7 @@ export default function CreateProjectModal() {
                       </div>
                       <div className="flex-1 text-left">
                         <h3 className="font-bold text-amber-100">Forge Manually</h3>
-                        <p className="text-sm text-amber-200/80">Craft every detail yourself</p>
+                        <p className="text-sm text-amber-200/80">Craft your Algorand kingdom yourself</p>
                       </div>
                       <ChevronRight className="w-5 h-5 text-amber-200/50" />
                     </button>
@@ -235,14 +239,14 @@ export default function CreateProjectModal() {
                   >
                     <div className="space-y-2">
                       <label className="block text-sm font-bold text-amber-200">
-                        Project Name
+                        Kingdom Name
                       </label>
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         className="w-full bg-amber-900/50 border-4 border-amber-900 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-400/50 focus:outline-none focus:border-amber-600"
-                        placeholder="Enter project name"
+                        placeholder="Enter kingdom name"
                       />
                     </div>
 
@@ -344,7 +348,7 @@ export default function CreateProjectModal() {
 
                     <div className="space-y-2">
                       <label className="block text-sm font-bold text-amber-200">
-                        Project Image URL
+                        Kingdom Image URL
                       </label>
                       <input
                         type="text"
@@ -375,7 +379,7 @@ export default function CreateProjectModal() {
                             <Sparkles className="w-5 h-5" />
                           </motion.div>
                         ) : (
-                          <span>Forge Project</span>
+                          <span>Forge Kingdom</span>
                         )}
                       </button>
                     </div>
@@ -399,7 +403,7 @@ export default function CreateProjectModal() {
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
                             className="w-full bg-amber-900/50 border-4 border-amber-900 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-400/50 focus:outline-none focus:border-amber-600 h-32 resize-none"
-                            placeholder="Describe your project to the Oracle..."
+                            placeholder="Describe your Algorand kingdom to the Oracle..."
                           />
                         </div>
 
@@ -467,7 +471,7 @@ export default function CreateProjectModal() {
                                 <Sparkles className="w-5 h-5" />
                               </motion.div>
                             ) : (
-                              <span>Manifest Project</span>
+                              <span>Manifest Kingdom</span>
                             )}
                           </button>
                         </div>

@@ -49,7 +49,6 @@ interface KingdomContextType {
   proposals: Proposal[];
   recentEvents: RecentEvent[];
   favoriteKingdoms: Kingdom[];
-  algorandKingdoms: Kingdom[];
   isLoadingAlgorand: boolean;
   getKingdom: (id: string) => Kingdom | undefined;
   getProposal: (id: string) => Proposal | undefined;
@@ -67,20 +66,20 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [recentEvents, setRecentEvents] = useState<RecentEvent[]>([]);
   const [favoriteKingdoms, setFavoriteKingdoms] = useState<Kingdom[]>([]);
-  const [algorandKingdoms, setAlgorandKingdoms] = useState<Kingdom[]>([]);
   const [isLoadingAlgorand, setIsLoadingAlgorand] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [algorandKingdoms, setAlgorandKingdoms] = useState<Kingdom[]>([]);
 
   const updateKingdoms = () => {
-    // Get kingdoms from YJS array (which is synced with localStorage)
-    const allKingdoms = sharedProjects.toArray();
+    // Get kingdoms from YJS array (RTC-synced kingdoms)
+    const rtcKingdoms = sharedProjects.toArray();
     const favorites = JSON.parse(localStorage.getItem('kingdom_favorites') || '[]');
     
-    console.log('🏰 KingdomContext - Raw YJS kingdoms:', allKingdoms);
-    console.log('🏰 KingdomContext - YJS array length:', sharedProjects.length);
+    console.log('🏰 KingdomContext - RTC kingdoms:', rtcKingdoms);
+    console.log('🏰 KingdomContext - Algorand kingdoms:', algorandKingdoms);
     
-    // Combine local kingdoms with Algorand kingdoms
-    const combinedKingdoms = [...allKingdoms, ...algorandKingdoms];
+    // Combine Algorand base kingdoms with RTC-synced kingdoms
+    const combinedKingdoms = [...algorandKingdoms, ...rtcKingdoms];
     
     // Update kingdoms list (newest first)
     const reversedKingdoms = [...combinedKingdoms].reverse();
@@ -126,7 +125,7 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
         // Add events for new Algorand kingdoms
         algorandData.forEach(kingdom => {
           addEvent({
-            type: EVENT_TYPES.KINGDOM_CREATED,
+            type: EVENT_TYPES.ALGORAND_KINGDOM_DISCOVERED,
             title: `Algorand Kingdom: ${kingdom.name}`,
             description: `${kingdom.name} discovered on Algorand testnet`,
             relatedId: kingdom.id,
@@ -182,11 +181,10 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     initializeFromStorage();
     
     // Load initial data
-    updateKingdoms();
     updateProposals();
     updateEvents();
     
-    // Load Algorand data
+    // Load Algorand data first, then update kingdoms
     refreshAlgorandData();
     
     // Set up observers for real-time updates
@@ -245,7 +243,6 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
       proposals,
       recentEvents,
       favoriteKingdoms,
-      algorandKingdoms,
       isLoadingAlgorand,
       getKingdom,
       getProposal,
