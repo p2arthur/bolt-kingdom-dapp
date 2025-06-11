@@ -35,7 +35,6 @@ export async function fetchActiveKingdomIds(): Promise<KingdomIdsResponse> {
   try {
     console.log('🔗 Fetching kingdom IDs from Algorand testnet...');
     
-    // Make HTTP GET request to Algorand testnet API
     const response = await fetch(
       'https://testnet-idx.4160.nodely.dev/v2/applications/740978143/box?name=b64:a2luZ2RvbXM='
     );
@@ -45,58 +44,37 @@ export async function fetchActiveKingdomIds(): Promise<KingdomIdsResponse> {
     }
 
     const data: AlgorandBoxResponse = await response.json();
-    console.log('📦 Raw API response:', data);
-
     if (!data.value) {
       throw new Error('No value field in response');
     }
 
-    // Decode base64 value to byte array
     const base64Value = data.value;
-    console.log('🔤 Base64 value:', base64Value);
-    
-    // Convert base64 to binary string, then to byte array
     const binaryString = atob(base64Value);
-    const byteArray = new Uint8Array(binaryString.length);
-    
+    const buffer = new ArrayBuffer(binaryString.length);
+    const view = new Uint8Array(buffer);
+
     for (let i = 0; i < binaryString.length; i++) {
-      byteArray[i] = binaryString.charCodeAt(i);
+      view[i] = binaryString.charCodeAt(i);
     }
-    
-    console.log('📊 Decoded byte array:', byteArray);
-    console.log('📏 Byte array length:', byteArray.length);
 
-    // Interpret as sequence of 4-byte unsigned integers (big-endian)
+    const dataView = new DataView(buffer);
     const activeKingdomIds: number[] = [];
-    
-    // Process in chunks of 4 bytes
-    for (let i = 0; i < byteArray.length; i += 4) {
-      if (i + 3 < byteArray.length) {
-        // Read 4 bytes as big-endian unsigned 32-bit integer
-        const uint32 = (byteArray[i] << 24) | 
-                      (byteArray[i + 1] << 16) | 
-                      (byteArray[i + 2] << 8) | 
-                      byteArray[i + 3];
-        
-        // Convert to unsigned 32-bit integer
-        const kingdomId = uint32 >>> 0;
-        activeKingdomIds.push(kingdomId);
-        
-        console.log(`🏰 Decoded kingdom ID at offset ${i}:`, kingdomId);
-      }
+
+    // Read 4-byte big-endian unsigned integers
+    for (let offset = 0; offset + 4 <= buffer.byteLength; offset += 4) {
+      const kingdomId = dataView.getUint32(offset, false); // false = big-endian
+      activeKingdomIds.push(kingdomId);
     }
 
-    console.log('✅ Successfully decoded kingdom IDs:', activeKingdomIds);
-    
-    return {
-      activeKingdomIds
-    };
+    console.log('✅ Decoded kingdom IDs:', activeKingdomIds);
+    return { activeKingdomIds };
 
   } catch (error) {
     console.error('❌ Error fetching kingdom IDs:', error);
     throw error;
   }
 }
+
 
 /**
  * Alternative decoding method using DataView for more precise control
