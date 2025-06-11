@@ -63,7 +63,9 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
     const allKingdoms = sharedProjects.toArray();
     const favorites = JSON.parse(localStorage.getItem('kingdom_favorites') || '[]');
     
-    // Update kingdoms list
+    console.log('Updating kingdoms:', allKingdoms); // Debug log
+    
+    // Update kingdoms list (newest first)
     const reversedKingdoms = [...allKingdoms].reverse();
     setKingdoms(reversedKingdoms);
     
@@ -74,6 +76,8 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
   const updateEvents = () => {
     const allEvents = sharedEvents.toArray();
     const storedEvents = loadRecentEvents();
+    
+    console.log('Updating events - shared:', allEvents, 'stored:', storedEvents); // Debug log
     
     // Combine shared events with stored events, remove duplicates, and sort by timestamp
     const combinedEvents = [...allEvents, ...storedEvents];
@@ -96,27 +100,30 @@ export function KingdomProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize on mount
   useEffect(() => {
+    console.log('KingdomProvider initializing...'); // Debug log
+    
     // Load initial data
     updateKingdoms();
     updateEvents();
     
-    // Set up observers
-    const unsubscribeProjects = sharedProjects.observe(() => {
+    // Set up observers for real-time updates
+    const projectsObserver = () => {
+      console.log('Projects changed, updating kingdoms...'); // Debug log
       updateKingdoms();
-    });
+    };
 
-    const unsubscribeEvents = sharedEvents.observe(() => {
+    const eventsObserver = () => {
+      console.log('Events changed, updating events...'); // Debug log
       updateEvents();
-    });
+    };
+
+    sharedProjects.observe(projectsObserver);
+    sharedEvents.observe(eventsObserver);
 
     // Cleanup observers on unmount
     return () => {
-      if (typeof unsubscribeProjects === 'function') {
-        unsubscribeProjects();
-      }
-      if (typeof unsubscribeEvents === 'function') {
-        unsubscribeEvents();
-      }
+      sharedProjects.unobserve(projectsObserver);
+      sharedEvents.unobserve(eventsObserver);
     };
   }, []);
 

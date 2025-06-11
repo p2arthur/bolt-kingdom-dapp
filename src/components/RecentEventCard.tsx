@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Crown, Scroll, Vote, Coins, Zap, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { RecentEvent, EVENT_TYPES } from '../lib/yjs';
+import { useKingdom } from '../contexts/KingdomContext';
 
 interface RecentEventCardProps {
   event: RecentEvent;
@@ -54,10 +55,15 @@ const formatTimeAgo = (timestamp: number) => {
 };
 
 export default function RecentEventCard({ event, index }: RecentEventCardProps) {
+  const { getKingdom } = useKingdom();
   const Icon = getEventIcon(event.type);
   const colors = getEventColors(event.type, index);
   const isKingdomEvent = event.type === EVENT_TYPES.KINGDOM_CREATED;
   const isNewKingdom = isKingdomEvent && index === 0;
+
+  // Check if the kingdom still exists for kingdom events
+  const kingdom = isKingdomEvent && event.relatedId ? getKingdom(event.relatedId) : null;
+  const isValidKingdomLink = isKingdomEvent && kingdom;
 
   const cardContent = (
     <motion.div
@@ -65,7 +71,7 @@ export default function RecentEventCard({ event, index }: RecentEventCardProps) 
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ delay: index * 0.1 }}
-      className="flex items-center gap-3 py-1 px-3 rounded-lg"
+      className={`flex items-center gap-3 py-1 px-3 rounded-lg ${isValidKingdomLink ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
       style={{
         background: colors.background,
         border: `3px solid ${colors.border}`,
@@ -99,8 +105,8 @@ export default function RecentEventCard({ event, index }: RecentEventCardProps) 
     </motion.div>
   );
 
-  // If it's a kingdom event with a related ID, make it clickable
-  if (isKingdomEvent && event.relatedId) {
+  // If it's a valid kingdom event with a related ID, make it clickable
+  if (isValidKingdomLink) {
     return (
       <Link to={`/project/${event.relatedId}`}>
         {cardContent}
@@ -108,6 +114,6 @@ export default function RecentEventCard({ event, index }: RecentEventCardProps) 
     );
   }
 
-  // For other events, just display the card
+  // For other events or invalid kingdom links, just display the card
   return cardContent;
 }

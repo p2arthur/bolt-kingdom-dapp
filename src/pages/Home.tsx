@@ -2,14 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Rocket, Vote, Coins, Github, Crown, ExternalLink, TrendingUp, Timer, Zap, Sword, Shield, Star, Heart, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { sharedProjects, calculateLevel } from '../lib/yjs';
+import { useKingdom } from '../contexts/KingdomContext';
 import { getFavorites } from '../lib/favorites';
 import CreateProjectModal from '../components/CreateProjectModal';
 import ProjectCard from '../components/ProjectCard';
 
 function Home() {
-  const [projects, setProjects] = useState([]);
-  const [favoriteProjects, setFavoriteProjects] = useState([]);
+  const { kingdoms, favoriteKingdoms } = useKingdom();
   const [scrollY, setScrollY] = useState(0);
   const [currentSection, setCurrentSection] = useState(0);
   
@@ -20,7 +19,7 @@ function Home() {
   const sections = [
     { ref: heroRef, label: 'Hero' },
     { ref: activeKingdomsRef, label: 'Active Kingdoms' },
-    ...(favoriteProjects.length > 0 ? [{ ref: favoritesRef, label: 'Favorites' }] : [])
+    ...(favoriteKingdoms.length > 0 ? [{ ref: favoritesRef, label: 'Favorites' }] : [])
   ];
 
   const coinPositions = [
@@ -74,23 +73,6 @@ function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [sections.length]);
 
-  useEffect(() => {
-    const updateProjects = () => {
-      const allProjects = sharedProjects.toArray();
-      const favorites = getFavorites();
-      const favoritedProjects = allProjects.filter(project => favorites.includes(project.id));
-      
-      setProjects([...allProjects].reverse());
-      setFavoriteProjects(favoritedProjects);
-    };
-
-    updateProjects();
-
-    sharedProjects.observe(() => {
-      updateProjects();
-    });
-  }, []);
-
   const scrollToSection = (index) => {
     const section = sections[index].ref.current;
     if (section) {
@@ -117,6 +99,8 @@ function Home() {
       </div>
     </motion.div>
   );
+
+  console.log('Home component - kingdoms:', kingdoms, 'favoriteKingdoms:', favoriteKingdoms); // Debug log
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -226,12 +210,12 @@ function Home() {
             <section ref={activeKingdomsRef} className="mb-20 min-h-screen flex flex-col justify-center">
               <h2 className="text-3xl font-bold mb-8 flex items-center gap-3 text-white">
                 <Crown className="w-8 h-8" />
-                Active Kingdoms
+                Active Kingdoms ({kingdoms.length})
               </h2>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.length > 0 ? (
-                  projects.map((project, index) => (
+                {kingdoms.length > 0 ? (
+                  kingdoms.map((project, index) => (
                     <ProjectCard 
                       key={project.id} 
                       project={project} 
@@ -249,18 +233,18 @@ function Home() {
             </section>
 
             {/* Favorite Kingdoms Section */}
-            {favoriteProjects.length > 0 && (
+            {favoriteKingdoms.length > 0 && (
               <section ref={favoritesRef} className="min-h-screen flex flex-col justify-center">
                 <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-20" />
                 
                 <h3 className="text-2xl font-bold mb-8 flex items-center gap-3 text-white">
                   <Star className="w-7 h-7 fill-white text-white" />
-                  Favorite Kingdoms
+                  Favorite Kingdoms ({favoriteKingdoms.length})
                 </h3>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {favoriteProjects.map((project) => (
-                    <ProjectCard key={project.id} project={project} isFavorite={true} />
+                  {favoriteKingdoms.map((project) => (
+                    <ProjectCard key={project.id} project={project} />
                   ))}
                 </div>
               </section>
