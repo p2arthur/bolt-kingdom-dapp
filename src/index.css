@@ -249,6 +249,62 @@
   }
 }
 
+/* Kingdom Blinking Animation */
+@keyframes kingdom-blink {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+  25% {
+    opacity: 0.8;
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+  }
+  75% {
+    opacity: 0.9;
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Proposal Blinking Animation */
+@keyframes proposal-blink {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(232, 121, 249, 0);
+  }
+  25% {
+    opacity: 0.8;
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(232, 121, 249, 0.4);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(232, 121, 249, 0.6);
+  }
+  75% {
+    opacity: 0.9;
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(232, 121, 249, 0.4);
+  }
+}
+
+.animate-kingdom-blink {
+  animation: kingdom-blink 2s ease-in-out infinite;
+}
+
+.animate-proposal-blink {
+  animation: proposal-blink 2s ease-in-out infinite;
+}
+
 @keyframes pulse-border {
   0%, 100% {
     border-color: rgba(146,64,14,0.6);

@@ -21,16 +21,19 @@ interface ProjectCardProps {
 }
 
 export default function ProjectCard({ project, isNew = false }: ProjectCardProps) {
+  const cardStyle = {
+    background: project.primaryColor && project.secondaryColor 
+      ? `linear-gradient(135deg, ${project.primaryColor}, ${project.secondaryColor})`
+      : 'linear-gradient(135deg, #A855F7, #F0ABFC)',
+    borderColor: project.accentColor || '#C084FC'
+  };
+
   return (
     <Link to={`/project/${project.id}`} className="block group">
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className={`medieval-card !p-4 ${isNew ? 'animate-kingdom-pulse' : ''}`}
-        style={{
-          animation: isNew ? 'kingdomPulse 2s infinite' : 'none',
-          background: `linear-gradient(135deg, ${project.primaryColor || '#A855F7'}, ${project.secondaryColor || '#F0ABFC'})`,
-          borderColor: project.accentColor || '#C084FC'
-        }}
+        className={`medieval-card !p-4 ${isNew ? 'animate-kingdom-blink' : ''}`}
+        style={cardStyle}
       >
         <div className="flex items-start gap-3">
           <div className="shrink-0 p-2 rounded-lg bg-white/10 backdrop-blur-sm">

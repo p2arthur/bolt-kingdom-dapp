@@ -25,8 +25,18 @@ const getEventIcon = (type: string) => {
   }
 };
 
-const getEventColors = (type: string, index: number) => {
+const getEventColors = (type: string, index: number, metadata?: any) => {
   if (type === EVENT_TYPES.KINGDOM_CREATED) {
+    // Use kingdom's custom colors if available
+    if (metadata?.colors?.primaryColor && metadata?.colors?.secondaryColor) {
+      return {
+        background: index === 0 
+          ? `linear-gradient(135deg, ${metadata.colors.primaryColor}, ${metadata.colors.secondaryColor})`
+          : `linear-gradient(135deg, ${metadata.colors.primaryColor}40, ${metadata.colors.secondaryColor}40)`,
+        border: metadata.colors.accentColor || '#C084FC'
+      };
+    }
+    
     return {
       background: index === 0 
         ? 'linear-gradient(135deg, #A855F7, #F0ABFC)'
@@ -37,8 +47,10 @@ const getEventColors = (type: string, index: number) => {
   
   if (type === EVENT_TYPES.PROPOSAL_CREATED) {
     return {
-      background: 'rgba(245, 161, 5, 0.3)',
-      border: 'rgba(146, 64, 14, 0.5)'
+      background: index === 0 
+        ? 'linear-gradient(135deg, #E879F9, #F3E8FF)' // Bright pastel purple-pink
+        : 'rgba(232, 121, 249, 0.3)',
+      border: index === 0 ? '#C084FC' : 'rgba(192, 132, 252, 0.5)'
     };
   }
   
@@ -64,10 +76,11 @@ const formatTimeAgo = (timestamp: number) => {
 export default function RecentEventCard({ event, index }: RecentEventCardProps) {
   const { getKingdom, getProposal } = useKingdom();
   const Icon = getEventIcon(event.type);
-  const colors = getEventColors(event.type, index);
+  const colors = getEventColors(event.type, index, event.metadata);
   const isKingdomEvent = event.type === EVENT_TYPES.KINGDOM_CREATED;
   const isProposalEvent = event.type === EVENT_TYPES.PROPOSAL_CREATED;
   const isNewKingdom = isKingdomEvent && index === 0;
+  const isNewProposal = isProposalEvent && index === 0;
 
   // Check if the related item still exists for events with links
   const kingdom = isKingdomEvent && event.relatedId ? getKingdom(event.relatedId) : null;
@@ -82,7 +95,7 @@ export default function RecentEventCard({ event, index }: RecentEventCardProps) 
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ delay: index * 0.1 }}
-      className={`flex items-center gap-3 py-1 px-3 rounded-lg ${(isValidKingdomLink || isValidProposalLink) ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+      className={`flex items-center gap-3 py-1 px-3 rounded-lg ${(isValidKingdomLink || isValidProposalLink) ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''} ${isNewKingdom ? 'animate-kingdom-blink' : ''} ${isNewProposal ? 'animate-proposal-blink' : ''}`}
       style={{
         background: colors.background,
         border: `3px solid ${colors.border}`,
@@ -95,6 +108,11 @@ export default function RecentEventCard({ event, index }: RecentEventCardProps) 
         <div className="flex items-center gap-2">
           <span className="font-bold text-white text-sm">{event.title}</span>
           {isNewKingdom && (
+            <span className="px-1.5 py-0.5 bg-white/20 text-white text-xs font-bold rounded-full animate-pulse backdrop-blur-sm">
+              NEW
+            </span>
+          )}
+          {isNewProposal && (
             <span className="px-1.5 py-0.5 bg-white/20 text-white text-xs font-bold rounded-full animate-pulse backdrop-blur-sm">
               NEW
             </span>
