@@ -119,16 +119,16 @@ function Home() {
     </motion.div>
   );
 
-  // Separate API-sourced and RTC-created kingdoms
-  const apiKingdoms = kingdoms.filter(k => !k.isRTC);
-  const rtcKingdoms = kingdoms.filter(k => k.isRTC);
+  // Separate local and Algorand kingdoms
+  const localKingdoms = kingdoms.filter(k => !k.isAlgorand);
+  const algorandKingdomsList = kingdoms.filter(k => k.isAlgorand);
 
   // Debug logging
   console.log('🏠 Home component render:');
   console.log('🏠 - kingdoms from context:', kingdoms);
   console.log('🏠 - kingdoms length:', kingdoms.length);
-  console.log('🏠 - API kingdoms:', apiKingdoms.length);
-  console.log('🏠 - RTC kingdoms:', rtcKingdoms.length);
+  console.log('🏠 - local kingdoms:', localKingdoms.length);
+  console.log('🏠 - algorand kingdoms:', algorandKingdomsList.length);
   console.log('🏠 - favoriteKingdoms:', favoriteKingdoms);
   console.log('🏠 - Raw YJS array:', sharedProjects.toArray());
   console.log('🏠 - YJS array length:', sharedProjects.length);
@@ -242,12 +242,8 @@ function Home() {
             <section ref={activeKingdomsRef} className="mb-20 min-h-screen flex flex-col justify-center">
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-3xl font-bold flex items-center gap-3 text-white">
-                  <img 
-                    src="https://algorand.com/static/algorand-logo-white-6e6e611912fccb44f0f9d2aeaac193e8.svg" 
-                    alt="Algorand" 
-                    className="h-8"
-                  />
-                  Algorand Kingdoms ({kingdoms.length})
+                  <Crown className="w-8 h-8" />
+                  Active Kingdoms ({kingdoms.length})
                 </h2>
                 
                 <button
@@ -265,19 +261,23 @@ function Home() {
                   ) : (
                     <RefreshCw className="w-5 h-5" />
                   )}
-                  <span>Refresh</span>
+                  <span>Refresh Algorand</span>
                 </button>
               </div>
               
-              {/* API Kingdoms Section */}
-              {apiKingdoms.length > 0 && (
+              {/* Algorand Kingdoms Section */}
+              {algorandKingdomsList.length > 0 && (
                 <div className="mb-12">
                   <h3 className="text-xl font-bold mb-6 flex items-center gap-3 text-white">
-                    <Zap className="w-6 h-6" />
-                    Discovered Kingdoms ({apiKingdoms.length})
+                    <img 
+                      src="https://algorand.com/static/algorand-logo-white-6e6e611912fccb44f0f9d2aeaac193e8.svg" 
+                      alt="Algorand" 
+                      className="h-6"
+                    />
+                    Algorand Kingdoms ({algorandKingdomsList.length})
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    {apiKingdoms.map((project, index) => (
+                    {algorandKingdomsList.map((project, index) => (
                       <ProjectCard 
                         key={project.id} 
                         project={project} 
@@ -288,15 +288,15 @@ function Home() {
                 </div>
               )}
 
-              {/* RTC Kingdoms Section */}
+              {/* Local Kingdoms Section */}
               <div>
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-3 text-white">
-                  <Crown className="w-6 h-6" />
-                  Forged Kingdoms ({rtcKingdoms.length})
+                  <Sword className="w-6 h-6" />
+                  Local Kingdoms ({localKingdoms.length})
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {rtcKingdoms.length > 0 ? (
-                    rtcKingdoms.map((project, index) => (
+                  {localKingdoms.length > 0 ? (
+                    localKingdoms.map((project, index) => (
                       <ProjectCard 
                         key={project.id} 
                         project={project} 
@@ -317,8 +317,8 @@ function Home() {
               <div className="mt-8 p-4 bg-black/20 rounded-lg text-white text-sm">
                 <div>🔍 Debug Info:</div>
                 <div>- Total kingdoms: {kingdoms.length}</div>
-                <div>- API kingdoms: {apiKingdoms.length}</div>
-                <div>- RTC kingdoms: {rtcKingdoms.length}</div>
+                <div>- Local kingdoms: {localKingdoms.length}</div>
+                <div>- Algorand kingdoms: {algorandKingdomsList.length}</div>
                 <div>- YJS array length: {sharedProjects.length}</div>
                 <div>- Loading Algorand: {isLoadingAlgorand ? 'Yes' : 'No'}</div>
                 <div>- Has refreshed: {hasRefreshed ? 'Yes' : 'No'}</div>

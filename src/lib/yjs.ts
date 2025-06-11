@@ -158,21 +158,14 @@ export const addEvent = (event: Omit<RecentEvent, 'id' | 'timestamp'>) => {
   console.log('📝 Events array after push:', sharedEvents.toArray())
 }
 
-// Add kingdom to shared projects (RTC-synced)
+// Add kingdom to shared projects
 export const addKingdom = (kingdom: any) => {
-  console.log('🏰 Adding kingdom to YJS shared projects (RTC):', kingdom)
+  console.log('🏰 Adding kingdom to YJS shared projects:', kingdom)
   console.log('🏰 YJS projects array before push:', sharedProjects.toArray())
   console.log('🏰 YJS projects array length before push:', sharedProjects.length)
   
-  // Mark as RTC-created kingdom (not from Algorand API)
-  const rtcKingdom = {
-    ...kingdom,
-    isAlgorand: true, // All kingdoms are Algorand-based now
-    isRTC: true // But this one was created via RTC
-  }
-  
-  // Add to YJS array (this will sync via RTC)
-  sharedProjects.push([rtcKingdom])
+  // Add to YJS array
+  sharedProjects.push([kingdom])
   
   // Immediately save to localStorage
   const allKingdoms = sharedProjects.toArray()
@@ -195,8 +188,7 @@ export const addKingdom = (kingdom: any) => {
         primaryColor: kingdom.primaryColor, 
         secondaryColor: kingdom.secondaryColor, 
         accentColor: kingdom.accentColor 
-      },
-      isRTC: true
+      }
     }
   })
   
