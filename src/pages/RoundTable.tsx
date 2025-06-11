@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, Plus, Timer, Check, X, Shield } from 'lucide-react';
 import { useWallet } from '@txnlab/use-wallet-react';
+import { useKingdom } from '../contexts/KingdomContext';
 import CreateProposalModal from '../components/CreateProposalModal';
 
 interface Proposal {
@@ -20,7 +21,14 @@ interface Proposal {
 export default function RoundTable() {
   const { appId } = useParams();
   const { activeAccount } = useWallet();
-  const [proposals, setProposals] = useState<Proposal[]>([]);
+  const { proposals, updateProposals } = useKingdom();
+
+  console.log('🏛️ RoundTable - Current proposals from context:', proposals);
+
+  // Load proposals on mount and when context updates
+  useEffect(() => {
+    console.log('🏛️ RoundTable - Proposals updated:', proposals);
+  }, [proposals]);
 
   const isExpired = (expiresAt: Date) => {
     return new Date() > new Date(expiresAt);
@@ -37,18 +45,18 @@ export default function RoundTable() {
   const handleVote = async (proposalId: string, vote: 'yes' | 'no') => {
     if (!activeAccount?.address) return;
 
-    setProposals(prev => prev.map(proposal => {
-      if (proposal.id === proposalId) {
-        return {
-          ...proposal,
-          votes: {
-            ...proposal.votes,
-            [vote]: [...proposal.votes[vote], activeAccount.address]
-          }
-        };
-      }
-      return proposal;
-    }));
+    console.log(`🗳️ RoundTable - Voting ${vote} on proposal ${proposalId}`);
+    
+    // For now, just update local state
+    // In production, this would update the blockchain
+    // TODO: Implement actual voting logic with YJS or blockchain
+  };
+
+  const handleProposalCreated = (proposal: Proposal) => {
+    console.log('🏛️ RoundTable - Proposal created callback triggered:', proposal);
+    // The proposal is already added to YJS in the modal
+    // Just trigger a context update to ensure sync
+    updateProposals();
   };
 
   const ProposalCard = ({ proposal }: { proposal: Proposal }) => {
@@ -84,7 +92,7 @@ export default function RoundTable() {
             
             <div className="flex items-center gap-2 text-sm text-amber-950/70 mb-4">
               <Shield className="w-4 h-4" />
-              <span>Created by {proposal.creator}</span>
+              <span>Created by {proposal.creator.slice(0, 8)}...</span>
               <Timer className="w-4 h-4 ml-4" />
               <span>
                 {expired 
@@ -118,15 +126,17 @@ export default function RoundTable() {
               <div className="flex gap-2 mt-4">
                 <button
                   onClick={() => handleVote(proposal.id, 'yes')}
-                  className="flex-1 medieval-button !bg-amber-950 !text-amber-100 hover:!bg-amber-800"
+                  className="flex-1 medieval-button !bg-amber-950 !text-amber-100 hover:!bg-amber-800 flex items-center justify-center gap-2"
                 >
                   <Check className="w-5 h-5" />
+                  <span>Yes</span>
                 </button>
                 <button
                   onClick={() => handleVote(proposal.id, 'no')}
-                  className="flex-1 medieval-button !bg-red-950 !text-red-100 hover:!bg-red-800 !border-red-900"
+                  className="flex-1 medieval-button !bg-red-950 !text-red-100 hover:!bg-red-800 !border-red-900 flex items-center justify-center gap-2"
                 >
                   <X className="w-5 h-5" />
+                  <span>No</span>
                 </button>
               </div>
             )}
@@ -177,15 +187,15 @@ export default function RoundTable() {
           </div>
           
           {activeAccount && (
-            <CreateProposalModal
-              onProposalCreated={(proposal) => {
-                setProposals(prev => [...prev, {
-                  ...proposal,
-                  votes: { yes: [], no: [] }
-                }]);
-              }}
-            />
+            <CreateProposalModal onProposalCreated={handleProposalCreated} />
           )}
+        </div>
+
+        {/* Debug Info */}
+        <div className="mb-4 p-4 bg-black/20 rounded-lg text-white text-sm">
+          <div>🏛️ RoundTable Debug Info:</div>
+          <div>- Proposals from context: {proposals.length}</div>
+          <div>- Proposal titles: {JSON.stringify(proposals.map(p => p.title))}</div>
         </div>
 
         <div className="space-y-4">
