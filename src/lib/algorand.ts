@@ -33,8 +33,6 @@ interface AlgorandKingdom {
  */
 export async function fetchActiveKingdomIds(): Promise<KingdomIdsResponse> {
   try {
-    console.log('🔗 Fetching kingdom IDs from Algorand testnet...');
-    
     const response = await fetch(
       'https://testnet-idx.4160.nodely.dev/v2/applications/740978143/box?name=b64:a2luZ2RvbXM='
     );
@@ -48,32 +46,33 @@ export async function fetchActiveKingdomIds(): Promise<KingdomIdsResponse> {
       throw new Error('No value field in response');
     }
 
-    const base64Value = data.value;
-    const binaryString = atob(base64Value);
-    const buffer = new ArrayBuffer(binaryString.length);
-    const view = new Uint8Array(buffer);
+    const binary = atob(data.value);
+    const buffer = new ArrayBuffer(binary.length);
+    const bytes = new Uint8Array(buffer);
 
-    for (let i = 0; i < binaryString.length; i++) {
-      view[i] = binaryString.charCodeAt(i);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
     }
 
-    const dataView = new DataView(buffer);
+    const view = new DataView(buffer);
     const activeKingdomIds: number[] = [];
 
-    // Read 4-byte big-endian unsigned integers
-    for (let offset = 0; offset + 4 <= buffer.byteLength; offset += 4) {
-      const kingdomId = dataView.getUint32(offset, false); // false = big-endian
-      activeKingdomIds.push(kingdomId);
+    let offset = 1; // Skip the type tag or count byte
+    while (offset + 8 <= buffer.byteLength) {
+      const big = (BigInt(view.getUint32(offset, false)) << 32n) + BigInt(view.getUint32(offset + 4, false));
+      activeKingdomIds.push(Number(big)); // If you're sure it's < 2^53
+      offset += 8;
     }
 
-    console.log('✅ Decoded kingdom IDs:', activeKingdomIds);
+    console.log('✅ Correctly decoded kingdom IDs:', activeKingdomIds);
     return { activeKingdomIds };
 
   } catch (error) {
-    console.error('❌ Error fetching kingdom IDs:', error);
+    console.error('❌ Error decoding kingdom IDs:', error);
     throw error;
   }
 }
+
 
 
 /**
