@@ -2,11 +2,36 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Scroll, ChevronDown, Book, Sword } from 'lucide-react';
 import { WalletButton } from '@txnlab/use-wallet-ui-react';
+import { useWallet } from '@txnlab/use-wallet-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar() {
   const [network, setNetwork] = useState<'mainnet' | 'testnet'>('mainnet');
   const [isOpen, setIsOpen] = useState(false);
+  const { activeAccount } = useWallet();
+
+  // Custom wallet button component that shows address
+  const CustomWalletButton = () => {
+    if (activeAccount?.address) {
+      // Format address to show first 5 characters + "..."
+      const formattedAddress = `${activeAccount.address.slice(0, 5)}...`;
+      
+      return (
+        <div data-wallet-ui>
+          <button className="medieval-button !px-4 !py-2 !text-sm flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+            <span>{formattedAddress}</span>
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div data-wallet-ui>
+        <WalletButton className="medieval-button !px-4 !py-2 !text-sm" />
+      </div>
+    );
+  };
 
   return (
     <>
@@ -103,9 +128,7 @@ export default function Navbar() {
             </div>
           </div>
           
-          <div data-wallet-ui>
-            <WalletButton className="bg-red-300"/>
-          </div>
+          <CustomWalletButton />
         </div>
       </nav>
     </>
